@@ -32,6 +32,15 @@ const ThemeEditor = ({ theme, onUpdate, onApplyPreset }: ThemeEditorProps) => {
     onUpdate(updated);
   };
 
+  const handleBackgroundFile = (file?: File) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      handleBackgroundChange('value', ev.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleFontChange = (key: keyof Theme['fonts'], value: string) => {
     const updated = {
       ...customTheme,
@@ -142,6 +151,21 @@ const ThemeEditor = ({ theme, onUpdate, onApplyPreset }: ThemeEditorProps) => {
                 </div>
               </div>
             ))}
+            {/* Extra color picks */}
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-neon-cyan uppercase">muted</label>
+              <div className="flex gap-2">
+                <input type="color" value={customTheme.colors.muted || '#94A3B8'} onChange={(e) => handleColorChange('muted' as any, e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
+                <Input value={customTheme.colors.muted || ''} onChange={(e) => handleColorChange('muted' as any, e.target.value)} className="flex-1 bg-cyber-dark/50 border-neon-cyan/30 text-white font-mono" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-neon-cyan uppercase">highlight</label>
+              <div className="flex gap-2">
+                <input type="color" value={customTheme.colors.highlight || '#FFD166'} onChange={(e) => handleColorChange('highlight' as any, e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
+                <Input value={customTheme.colors.highlight || ''} onChange={(e) => handleColorChange('highlight' as any, e.target.value)} className="flex-1 bg-cyber-dark/50 border-neon-cyan/30 text-white font-mono" />
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -252,12 +276,18 @@ const ThemeEditor = ({ theme, onUpdate, onApplyPreset }: ThemeEditorProps) => {
             {customTheme.background.type === 'image' && (
               <div>
                 <label className="text-xs font-mono text-neon-cyan mb-2 block">IMAGE_URL</label>
-                <Input
-                  value={customTheme.background.value}
-                  onChange={(e) => handleBackgroundChange('value', e.target.value)}
-                  className="bg-cyber-dark/50 border-neon-cyan/30 text-white font-mono"
-                  placeholder="/background-image.jpg"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={customTheme.background.value}
+                    onChange={(e) => handleBackgroundChange('value', e.target.value)}
+                    className="bg-cyber-dark/50 border-neon-cyan/30 text-white font-mono"
+                    placeholder="/background-image.jpg"
+                  />
+                  <label className="cursor-pointer">
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleBackgroundFile(e.target.files?.[0])} />
+                    <div className="px-3 py-2 rounded-lg border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10">Upload</div>
+                  </label>
+                </div>
               </div>
             )}
 

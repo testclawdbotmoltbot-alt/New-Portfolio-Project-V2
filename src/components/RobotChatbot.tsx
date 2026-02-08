@@ -13,10 +13,13 @@ interface Message {
 
 const RobotChatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showActions, setShowActions] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [dragBounds, setDragBounds] = useState({ left: 0, right: 300, top: 0, bottom: 300 });
-  const [mounted, setMounted] = useState(false);
+  const [actionTimer, setActionTimer] = useState(0);
+  const [actionLabel, setActionLabel] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -37,43 +40,22 @@ const RobotChatbot = () => {
     const updatePositionAndBounds = () => {
       const w = typeof window !== 'undefined' ? window.innerWidth : 300;
       const h = typeof window !== 'undefined' ? window.innerHeight : 300;
-      setPosition({ x: Math.max(0, w - 120), y: Math.max(0, h - 150) });
+      setPosition({ x: 20, y: Math.max(0, h - 200) });
       setDragBounds({ left: 0, right: Math.max(0, w - 100), top: 0, bottom: Math.max(0, h - 100) });
-      setMounted(true);
     };
     updatePositionAndBounds();
     window.addEventListener('resize', updatePositionAndBounds);
     return () => window.removeEventListener('resize', updatePositionAndBounds);
   }, []);
 
-  // Auto-scroll messages
+  // Action timer countdown
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Cycle through robot activities when idle (running, dancing, scanning, waving)
-  useEffect(() => {
-    if (isDragging || isOpen) {
-      setRobotActivity('idle');
-      return;
-    }
-    const activities: RobotActivity[] = ['idle', 'running', 'dancing', 'scanning', 'waving'];
-    let index = 0;
+    if (actionTimer <= 0) return;
     const interval = setInterval(() => {
-      if (isDragging || isOpen) return;
-      index = (index + 1) % activities.length;
-      setRobotActivity(activities[index]);
-    }, 6000);
+      setActionTimer(t => t - 100);
+    }, 100);
     return () => clearInterval(interval);
-  }, [isDragging, isOpen]);
-
-  // Reset mood to idle when not typing
-  useEffect(() => {
-    const t = setInterval(() => {
-      if (!isDragging && !isOpen) setRobotMood('idle');
-    }, 3000);
-    return () => clearInterval(t);
-  }, [isDragging, isOpen]);
+  }, [actionTimer]);
 
   const botResponses: Record<string, string> = {
     'hello': "Hello there! Welcome to Alex's cybernetic portfolio! 🚀",
@@ -140,6 +122,73 @@ const RobotChatbot = () => {
 
   const quickReplies = ['Skills', 'Projects', 'Experience', 'Contact'];
 
+  // Action buttons around the robot
+  const robotActions = [
+    { 
+      label: 'Dance', 
+      icon: '💃',
+      desc: 'Watch me dance!',
+      action: () => { 
+        setRobotActivity('dancing'); 
+        setActionLabel('DANCING');
+        setActionTimer(4000);
+        setShowActions(false); 
+        setTimeout(() => { setRobotActivity('idle'); setActionLabel(''); }, 4000); 
+      } 
+    },
+    { 
+      label: 'Run', 
+      icon: '🏃',
+      desc: 'Watch me run!',
+      action: () => { 
+        setRobotActivity('running'); 
+        setActionLabel('RUNNING');
+        setActionTimer(3000);
+        setShowActions(false); 
+        setTimeout(() => { setRobotActivity('idle'); setActionLabel(''); }, 3000); 
+      } 
+    },
+    { 
+      label: 'Scan', 
+      icon: '🔍',
+      desc: 'Watch me scan!',
+      action: () => { 
+        setRobotActivity('scanning'); 
+        setActionLabel('SCANNING');
+        setActionTimer(3000);
+        setShowActions(false); 
+        setTimeout(() => { setRobotActivity('idle'); setActionLabel(''); }, 3000); 
+      } 
+    },
+    { 
+      label: 'Wave', 
+      icon: '👋',
+      desc: 'Watch me wave!',
+      action: () => { 
+        setRobotActivity('waving'); 
+        setActionLabel('WAVING');
+        setActionTimer(2000);
+        setShowActions(false); 
+        setTimeout(() => { setRobotActivity('idle'); setActionLabel(''); }, 2000); 
+      } 
+    },
+    { 
+      label: 'Chat', 
+      icon: '💬',
+      desc: 'Let\'s chat!',
+      action: () => { setIsOpen(true); setShowActions(false); } 
+    },
+  ];
+
+  // Calculate position for buttons around robot in circular pattern - MUCH FURTHER APART
+  const getActionButtonPosition = (index: number, total: number) => {
+    const angle = (index / total) * Math.PI * 2 - Math.PI / 2;
+    const radius = 130; // Increased from 70 to spread buttons much further
+    const x = Math.cos(angle) * radius;
+    const y = Math.sin(angle) * radius;
+    return { x, y };
+  };
+
   // Robot face expressions
   const getRobotFace = () => {
     switch (robotMood) {
@@ -181,10 +230,42 @@ const RobotChatbot = () => {
     }
   };
 
-  if (!mounted) return null;
-
   return (
     <>
+      {/* Action Buttons around Robot - Only show after user clicks */}
+      {showActions && robotActions.map((action, index) => {
+        const pos = getActionButtonPosition(index, robotActions.length);
+        const robotX = position.x + dragOffset.x + 50;
+        const robotY = position.y + dragOffset.y + 50;
+        const buttonX = robotX + pos.x;
+        const buttonY = robotY + pos.y;
+        
+        return (
+          <motion.div
+            key={action.label}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: index * 0.1 }}
+            className="fixed z-[9998] pointer-events-auto"
+            style={{
+              left: `${buttonX}px`,
+              top: `${buttonY}px`,
+              transform: 'translate(-50%, -50%)',
+            }}
+          >
+            <motion.button
+              onClick={action.action}
+              title={action.desc}
+              whileHover={{ scale: 1.25, boxShadow: '0 0 30px rgb(0, 255, 255, 0.9)' }}
+              whileTap={{ scale: 0.9 }}
+              className="w-14 h-14 rounded-full bg-gradient-to-r from-cyber-dark to-cyber-dark/50 border-2 border-neon-cyan text-white font-bold text-2xl flex items-center justify-center hover:bg-neon-cyan/20 transition-all shadow-[0_0_20px_rgba(0,255,255,0.6)]"
+            >
+              {action.icon}
+            </motion.button>
+          </motion.div>
+        );
+      })}
+
       {/* Draggable Robot */}
       <motion.div
         ref={robotRef}
@@ -192,8 +273,22 @@ const RobotChatbot = () => {
         dragMomentum={false}
         dragConstraints={dragBounds}
         onDragStart={() => setIsDragging(true)}
-        onDragEnd={() => setIsDragging(false)}
-        onClick={() => !isDragging && setIsOpen(true)}
+        onDrag={(_, info) => {
+          setDragOffset({ x: info.offset.x, y: info.offset.y });
+        }}
+        onDragEnd={(_, info) => {
+          setIsDragging(false);
+          setPosition(prev => ({
+            x: prev.x + info.offset.x,
+            y: prev.y + info.offset.y
+          }));
+          setDragOffset({ x: 0, y: 0 });
+        }}
+        onClick={() => {
+          if (!isDragging && !isOpen) {
+            setShowActions(true);
+          }
+        }}
         initial={{ x: position.x, y: position.y }}
         animate={{
           scale: isDragging ? 1.1 : 1,
@@ -204,131 +299,163 @@ const RobotChatbot = () => {
         style={{ left: 0, top: 0, touchAction: 'none' }}
       >
         <div className="relative">
-          {/* Robot Body - animations depend on activity */}
+          {/* Action Display Indicator - Big text showing what robot is doing */}
+          {actionLabel && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute -top-16 left-1/2 -translate-x-1/2 whitespace-nowrap"
+            >
+              <div className="text-center">
+                <motion.div
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                  className="text-5xl font-orbitron font-bold text-transparent bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink bg-clip-text"
+                >
+                  {actionLabel}
+                </motion.div>
+                {actionTimer > 0 && (
+                  <motion.div className="mt-2 h-2 w-32 bg-cyber-dark/50 rounded-full border border-neon-cyan/30 overflow-hidden">
+                    <motion.div
+                      animate={{ width: `${(actionTimer / (robotActivity === 'dancing' ? 4000 : robotActivity === 'running' ? 3000 : robotActivity === 'scanning' ? 3000 : 2000)) * 100}%` }}
+                      transition={{ duration: 0.1 }}
+                      className="h-full bg-gradient-to-r from-neon-cyan to-neon-purple"
+                    />
+                  </motion.div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Robot Body - animations depend on activity - MUCH BIGGER */}
           <motion.div
             animate={{
-              y: isDragging ? 0 : robotActivity === 'running' ? [0, -8, 0] : robotActivity === 'dancing' ? [0, -6, 0] : [0, -5, 0],
-              x: robotActivity === 'dancing' ? [0, 4, -4, 0] : robotActivity === 'scanning' ? [0, 2, -2, 0] : 0,
-              rotate: robotActivity === 'dancing' ? [0, -8, 8, 0] : robotActivity === 'scanning' ? [0, 5, -5, 0] : 0,
+              y: isDragging ? 0 : robotActivity === 'running' ? [0, -15, 0] : robotActivity === 'dancing' ? [0, -12, 0] : [0, -8, 0],
+              x: robotActivity === 'dancing' ? [0, 8, -8, 0] : robotActivity === 'scanning' ? [0, 3, -3, 0] : 0,
+              rotate: robotActivity === 'dancing' ? [0, -12, 12, 0] : robotActivity === 'scanning' ? [0, 8, -8, 0] : 0,
             }}
             transition={{
               duration: robotActivity === 'running' ? 0.25 : robotActivity === 'dancing' ? 0.6 : 2,
               repeat: Infinity,
               ease: robotActivity === 'running' ? 'linear' : 'easeInOut',
             }}
-            className="w-20 h-28 relative"
+            className="w-32 h-44 relative"
           >
-            {/* Head */}
+            {/* Head - Bigger */}
             <motion.div
               animate={
                 robotActivity === 'scanning'
-                  ? { rotate: [0, 15, -15, 0] }
+                  ? { rotate: [0, 20, -20, 0] }
                   : robotActivity === 'waving'
-                  ? { y: [0, -2, 0] }
+                  ? { y: [0, -4, 0] }
                   : {}
               }
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-14 rounded-xl bg-gradient-to-b from-slate-700 to-slate-800 border-2 border-neon-cyan shadow-glow-cyan overflow-hidden"
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-20 rounded-2xl bg-gradient-to-b from-slate-700 to-slate-800 border-3 border-neon-cyan shadow-[0_0_30px_rgba(0,255,255,0.6)] overflow-hidden"
             >
-              {/* Antenna - more active when scanning */}
+              {/* Antenna - more active when scanning - BIGGER */}
               <motion.div
                 animate={{
-                  rotate: robotActivity === 'scanning' ? [0, 25, -25, 0] : [0, 10, -10, 0],
-                  scaleY: robotActivity === 'scanning' ? [1, 1.2, 1] : 1,
+                  rotate: robotActivity === 'scanning' ? [0, 35, -35, 0] : [0, 15, -15, 0],
+                  scaleY: robotActivity === 'scanning' ? [1, 1.3, 1] : 1,
                 }}
                 transition={{ duration: robotActivity === 'scanning' ? 1.5 : 4, repeat: Infinity }}
-                className="absolute -top-3 left-1/2 -translate-x-1/2 w-1 h-4 bg-neon-cyan origin-bottom"
+                className="absolute -top-4 left-1/2 -translate-x-1/2 w-1.5 h-6 bg-neon-cyan origin-bottom"
               >
                 <motion.div
-                  animate={{ opacity: robotActivity === 'scanning' ? [1, 0.4, 1] : [0.5, 1, 0.5] }}
+                  animate={{ opacity: robotActivity === 'scanning' ? [1, 0.3, 1] : [0.5, 1, 0.5] }}
                   transition={{ duration: 0.8, repeat: Infinity }}
-                  className="absolute -top-1 -left-1 w-3 h-3 rounded-full bg-neon-cyan"
+                  className="absolute -top-2 -left-1.5 w-4 h-4 rounded-full bg-neon-cyan"
                 />
               </motion.div>
               {/* Face */}
-              <div className="absolute inset-1 rounded-lg bg-slate-900 flex items-center justify-center">
+              <div className="absolute inset-1.5 rounded-lg bg-slate-900 flex items-center justify-center">
                 {getRobotFace()}
               </div>
             </motion.div>
 
-            {/* Body */}
-            <div className="absolute top-14 left-1/2 -translate-x-1/2 w-12 h-10 rounded-lg bg-gradient-to-b from-slate-600 to-slate-700 border border-neon-cyan/50">
-              {/* Chest Light - blinks faster when running/scanning */}
+            {/* Body - Bigger */}
+            <div className="absolute top-20 left-1/2 -translate-x-1/2 w-16 h-14 rounded-lg bg-gradient-to-b from-slate-600 to-slate-700 border-2 border-neon-cyan/50 shadow-[0_0_15px_rgba(0,255,255,0.3)]">
+              {/* Chest Light - blinks faster when running/scanning - BIGGER */}
               <motion.div
                 animate={{
-                  opacity: robotActivity === 'running' || robotActivity === 'scanning' ? [0.3, 1, 0.3] : [0.5, 1, 0.5],
-                  scale: robotActivity === 'scanning' ? [1, 1.15, 1] : 1,
+                  opacity: robotActivity === 'running' || robotActivity === 'scanning' ? [0.2, 1, 0.2] : [0.4, 1, 0.4],
+                  scale: robotActivity === 'scanning' ? [1, 1.2, 1] : robotActivity === 'running' ? [0.9, 1.1, 0.9] : 1,
                 }}
                 transition={{
-                  duration: robotActivity === 'running' ? 0.2 : robotActivity === 'scanning' ? 0.5 : 2,
+                  duration: robotActivity === 'running' ? 0.15 : robotActivity === 'scanning' ? 0.4 : 2,
                   repeat: Infinity,
                 }}
-                className="absolute top-2 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-neon-cyan/30 border border-neon-cyan"
+                className="absolute top-3 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-neon-cyan/40 border-2 border-neon-cyan shadow-[0_0_15px_rgba(0,255,255,0.6)]"
               >
-                <div className="absolute inset-1 rounded-full bg-neon-cyan" />
+                <motion.div 
+                  animate={{ scale: [0.8, 1, 0.8] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                  className="absolute inset-2 rounded-full bg-neon-cyan" 
+                />
               </motion.div>
             </div>
 
-            {/* Arms - different poses per activity */}
+            {/* Arms - different poses per activity - BIGGER and MORE EXAGGERATED */}
             <motion.div
               animate={{
                 rotate:
-                  isDragging ? [-20, 20] :
-                  robotActivity === 'waving' ? [10, -70, 10] :
-                  robotActivity === 'dancing' ? [-30, 30] :
-                  robotActivity === 'running' ? [-25, 25] :
-                  [-10, 10],
+                  isDragging ? [-25, 25] :
+                  robotActivity === 'waving' ? [15, -85, 15] :
+                  robotActivity === 'dancing' ? [-40, 40] :
+                  robotActivity === 'running' ? [-35, 35] :
+                  [-12, 12],
               }}
               transition={{
-                duration: robotActivity === 'waving' ? 0.5 : robotActivity === 'running' ? 0.2 : 1,
+                duration: robotActivity === 'waving' ? 0.5 : robotActivity === 'running' ? 0.15 : 1,
                 repeat: Infinity,
                 repeatType: 'reverse',
               }}
-              className="absolute top-12 -left-2 w-3 h-8 rounded-full bg-slate-600 border border-neon-cyan/30 origin-top"
+              className="absolute top-16 -left-3 w-4 h-10 rounded-full bg-slate-600 border-2 border-neon-cyan/40 origin-top shadow-[0_0_10px_rgba(0,255,255,0.3)]"
             />
             <motion.div
               animate={{
                 rotate:
                   isDragging ? [20, -20] :
-                  robotActivity === 'dancing' ? [30, -30] :
-                  robotActivity === 'running' ? [25, -25] :
-                  [10, -10],
+                  robotActivity === 'dancing' ? [40, -40] :
+                  robotActivity === 'running' ? [35, -35] :
+                  [12, -12],
               }}
               transition={{
-                duration: robotActivity === 'running' ? 0.2 : 1,
+                duration: robotActivity === 'running' ? 0.15 : 1,
                 repeat: Infinity,
                 repeatType: 'reverse',
               }}
-              className="absolute top-12 -right-2 w-3 h-8 rounded-full bg-slate-600 border border-neon-cyan/30 origin-top"
+              className="absolute top-16 -right-3 w-4 h-10 rounded-full bg-slate-600 border-2 border-neon-cyan/40 origin-top shadow-[0_0_10px_rgba(0,255,255,0.3)]"
             />
 
-            {/* Legs - running / walking / idle */}
+            {/* Legs - running / walking / idle - BIGGER */}
             <motion.div
               animate={{
-                rotate: robotActivity === 'running' ? [-35, 35] : robotActivity === 'dancing' ? [-15, 15] : [-5, 5],
+                rotate: robotActivity === 'running' ? [-45, 45] : robotActivity === 'dancing' ? [-20, 20] : [-8, 8],
               }}
               transition={{
                 duration: robotActivity === 'running' ? 0.15 : robotActivity === 'dancing' ? 0.4 : 2,
                 repeat: Infinity,
                 repeatType: 'reverse',
               }}
-              className="absolute top-[6rem] -left-0.5 w-2.5 h-5 rounded-full bg-slate-600 border border-neon-cyan/30 origin-top"
+              className="absolute top-32 -left-1.5 w-4 h-7 rounded-full bg-slate-600 border-2 border-neon-cyan/40 origin-top shadow-[0_0_10px_rgba(0,255,255,0.2)]"
             />
             <motion.div
               animate={{
-                rotate: robotActivity === 'running' ? [35, -35] : robotActivity === 'dancing' ? [15, -15] : [5, -5],
+                rotate: robotActivity === 'running' ? [45, -45] : robotActivity === 'dancing' ? [20, -20] : [8, -8],
               }}
               transition={{
                 duration: robotActivity === 'running' ? 0.15 : robotActivity === 'dancing' ? 0.4 : 2,
                 repeat: Infinity,
                 repeatType: 'reverse',
               }}
-              className="absolute top-[6rem] -right-0.5 w-2.5 h-5 rounded-full bg-slate-600 border border-neon-cyan/30 origin-top"
+              className="absolute top-32 -right-1.5 w-4 h-7 rounded-full bg-slate-600 border-2 border-neon-cyan/40 origin-top shadow-[0_0_10px_rgba(0,255,255,0.2)]"
             />
           </motion.div>
 
           {/* Speech Bubble (when not open) - changes with activity */}
-          {!isOpen && (
+          {!isOpen && !showActions && (
             <motion.div
               key={robotActivity}
               initial={{ opacity: 0, scale: 0.8 }}
@@ -341,6 +468,17 @@ const RobotChatbot = () => {
               {robotActivity === 'waving' && '👋 Hi there!'}
               {robotActivity === 'idle' && 'Click me!'}
               <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-neon-cyan rotate-45" />
+            </motion.div>
+          )}
+          {/* Action hint when actions are shown */}
+          {showActions && !isOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="absolute -top-2 -right-40 bg-neon-purple text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap"
+            >
+              Choose action!
+              <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-neon-purple rotate-45" />
             </motion.div>
           )}
         </div>
@@ -445,8 +583,9 @@ const RobotChatbot = () => {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick Replies */}
-              <div className="px-4 pb-2">
+              {/* Animation Tags */}
+              <div className="px-4 pb-4">
+                <p className="text-xs font-mono text-muted-foreground mb-2">QUICK_REPLIES</p>
                 <div className="flex flex-wrap gap-2">
                   {quickReplies.map((reply) => (
                     <button
@@ -455,7 +594,7 @@ const RobotChatbot = () => {
                         setInputValue(reply);
                         setTimeout(handleSend, 100);
                       }}
-                      className="px-3 py-1 text-xs rounded-full bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/20 transition-colors"
+                      className="px-3 py-1 text-xs rounded-full bg-neon-purple/10 border border-neon-purple/30 text-neon-purple hover:bg-neon-purple/20 transition-colors"
                     >
                       {reply}
                     </button>

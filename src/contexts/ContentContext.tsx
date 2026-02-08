@@ -20,6 +20,12 @@ export interface SiteConfig {
   siteName: string;
   tagline: string;
   logoUrl: string;
+  layoutDefaults?: {
+    alignment?: 'left' | 'center' | 'right';
+    width?: 'contained' | 'full';
+    fullHeight?: boolean;
+    mobileCenter?: boolean;
+  };
 }
 
 export interface NavConfig {
@@ -67,6 +73,8 @@ export interface Theme {
     surface: string;
     text: string;
     textMuted: string;
+    muted?: string;
+    highlight?: string;
   };
   background: {
     type: 'solid' | 'gradient' | 'image';
@@ -194,6 +202,12 @@ const defaultSiteConfig: SiteConfig = {
   siteName: 'ALEX.MORGAN',
   tagline: 'DIGITAL_ANALYST.exe',
   logoUrl: '',
+  layoutDefaults: {
+    alignment: 'center',
+    width: 'contained',
+    fullHeight: false,
+    mobileCenter: true,
+  },
 };
 
 const defaultNavConfig: NavConfig = {
@@ -259,15 +273,60 @@ interface ContentContextType {
   updateFooter: (config: Partial<FooterConfig>) => void;
   exportData: () => string;
   importData: (json: string) => boolean;
+  // CRUD operations for section items
+  getSectionItems: (sectionId: string) => any[];
+  addItemToSection: (sectionId: string, item: any) => void;
+  updateSectionItem: (sectionId: string, itemId: string, updates: any) => void;
+  deleteSectionItem: (sectionId: string, itemId: string) => void;
 }
 
 const defaultSections: Section[] = [
   { id: 'hero', type: 'hero', title: 'Hero Section', content: {}, isVisible: true, order: 0 },
   { id: 'about', type: 'about', title: 'About Section', content: {}, isVisible: true, order: 1 },
-  { id: 'skills', type: 'skills', title: 'Skills Section', content: {}, isVisible: true, order: 2 },
-  { id: 'projects', type: 'projects', title: 'Projects Section', content: {}, isVisible: true, order: 3 },
-  { id: 'experience', type: 'experience', title: 'Experience Section', content: {}, isVisible: true, order: 4 },
-  { id: 'testimonials', type: 'testimonials', title: 'Testimonials Section', content: {}, isVisible: true, order: 5 },
+  { 
+    id: 'skills', 
+    type: 'skills', 
+    title: 'Skills Section', 
+    content: { 
+      items: [
+        { id: 'skill-1', name: 'Data Analytics', level: 95, icon: '📊' },
+        { id: 'skill-2', name: 'Cloud Architecture', level: 90, icon: '☁️' },
+        { id: 'skill-3', name: 'AI/ML', level: 85, icon: '🤖' },
+      ]
+    }, 
+    isVisible: true, 
+    order: 2 
+  },
+  { 
+    id: 'projects', 
+    type: 'projects', 
+    title: 'Projects Section', 
+    content: { 
+      items: []
+    }, 
+    isVisible: true, 
+    order: 3 
+  },
+  { 
+    id: 'experience', 
+    type: 'experience', 
+    title: 'Experience Section', 
+    content: { 
+      items: []
+    }, 
+    isVisible: true, 
+    order: 4 
+  },
+  { 
+    id: 'testimonials', 
+    type: 'testimonials', 
+    title: 'Testimonials Section', 
+    content: { 
+      items: []
+    }, 
+    isVisible: true, 
+    order: 5 
+  },
   { id: 'contact', type: 'contact', title: 'Contact Section', content: {}, isVisible: true, order: 6 },
 ];
 
@@ -432,6 +491,60 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  // CRUD operations for section items
+  const getSectionItems = (sectionId: string): any[] => {
+    const section = sections.find(s => s.id === sectionId);
+    return section?.content?.items || [];
+  };
+
+  const addItemToSection = (sectionId: string, item: any) => {
+    setSections(prev => prev.map(s => {
+      if (s.id === sectionId) {
+        const items = s.content?.items || [];
+        return {
+          ...s,
+          content: {
+            ...s.content,
+            items: [...items, { ...item, id: item.id || uuidv4() }]
+          }
+        };
+      }
+      return s;
+    }));
+  };
+
+  const updateSectionItem = (sectionId: string, itemId: string, updates: any) => {
+    setSections(prev => prev.map(s => {
+      if (s.id === sectionId) {
+        const items = s.content?.items || [];
+        return {
+          ...s,
+          content: {
+            ...s.content,
+            items: items.map(item => item.id === itemId ? { ...item, ...updates } : item)
+          }
+        };
+      }
+      return s;
+    }));
+  };
+
+  const deleteSectionItem = (sectionId: string, itemId: string) => {
+    setSections(prev => prev.map(s => {
+      if (s.id === sectionId) {
+        const items = s.content?.items || [];
+        return {
+          ...s,
+          content: {
+            ...s.content,
+            items: items.filter(item => item.id !== itemId)
+          }
+        };
+      }
+      return s;
+    }));
+  };
+
   return (
     <ContentContext.Provider value={{
       sections,
@@ -450,6 +563,10 @@ export const ContentProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updateFooter,
       exportData,
       importData,
+      getSectionItems,
+      addItemToSection,
+      updateSectionItem,
+      deleteSectionItem,
     }}>
       {children}
     </ContentContext.Provider>

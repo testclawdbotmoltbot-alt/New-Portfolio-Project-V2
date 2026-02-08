@@ -8,7 +8,7 @@ import Experience from './sections/Experience';
 import Testimonials from './sections/Testimonials';
 import Contact from './sections/Contact';
 import Footer from './sections/Footer';
-import RobotChatbot from './components/RobotChatbot';
+import PuppyChatbot from './components/PuppyChatbot';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
@@ -50,7 +50,7 @@ const WebsiteLayout = () => {
         })}
       </main>
       <Footer />
-      <RobotChatbot />
+      <PuppyChatbot />
     </div>
   );
 };

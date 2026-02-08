@@ -10,11 +10,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useContent, type Section } from '@/contexts/ContentContext';
-import SectionEditor from '@/components/admin/SectionEditor';
+import ImprovedSectionEditor from '@/components/admin/ImprovedSectionEditor';
 import ThemeEditor from '@/components/admin/ThemeEditor';
 import SiteEditor from '@/components/admin/SiteEditor';
 import NavigationEditor from '@/components/admin/NavigationEditor';
 import FooterEditor from '@/components/admin/FooterEditor';
+import ExperienceEditor from '@/components/admin/ExperienceEditor';
+import ProjectsEditor from '@/components/admin/ProjectsEditor';
+import SkillsEditor from '@/components/admin/SkillsEditor';
 
 type AdminTab = 'site' | 'navigation' | 'footer' | 'sections' | 'theme' | 'settings';
 
@@ -301,13 +304,17 @@ const AdminDashboard = () => {
           {/* Sections Tab */}
           {activeTab === 'sections' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <p className="text-muted-foreground">
-                  Drag to reorder sections. Click to edit content.
-                </p>
+              {/* Header with instructions */}
+              <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6">
+                <h2 className="font-orbitron font-bold text-white mb-2 flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-neon-cyan" />
+                  PAGE SECTIONS
+                </h2>
+                <p className="text-sm text-muted-foreground">Manage all sections of your portfolio. Drag to reorder, click to edit content. Sections marked as hidden won't appear on your live page.</p>
               </div>
 
-              <div className="space-y-3">
+              {/* Sections Grid */}
+              <div className="grid gap-4">
                 {sections.map((section, index) => (
                   <motion.div
                     key={section.id}
@@ -316,61 +323,92 @@ const AdminDashboard = () => {
                     onDragStart={() => handleDragStart(section.id)}
                     onDragOver={(e) => handleDragOver(e, section.id)}
                     onDragEnd={handleDragEnd}
-                    className={`glass-panel rounded-xl border ${
-                      section.isVisible ? 'border-neon-cyan/30' : 'border-muted/30 opacity-60'
-                    } cursor-move transition-all duration-300 hover:border-neon-cyan/50`}
+                    className={`group glass-panel rounded-xl border transition-all duration-300 ${
+                      section.isVisible 
+                        ? 'border-neon-cyan/30 hover:border-neon-cyan/50 hover:shadow-[0_0_20px_rgba(0,255,255,0.2)]' 
+                        : 'border-muted/30 opacity-60 hover:opacity-80'
+                    } cursor-move overflow-hidden`}
                   >
-                    <div className="flex items-center gap-4 p-4">
-                      {/* Drag Handle */}
-                      <div className="text-muted-foreground">
-                        <GripVertical className="w-5 h-5" />
+                    <div className="p-5 flex items-center gap-4">
+                      {/* Drag Handle with visual indicator */}
+                      <div className="flex flex-col items-center justify-center text-muted-foreground opacity-40 group-hover:opacity-100 transition-opacity">
+                        <GripVertical className="w-6 h-6" />
+                        <span className="text-xs font-mono mt-1">{index + 1}</span>
                       </div>
 
-                      {/* Section Info */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-mono text-neon-cyan">#{index + 1}</span>
-                          <h3 className="font-orbitron font-bold text-white">{section.title}</h3>
-                          <span className="text-xs px-2 py-0.5 rounded bg-white/10 text-muted-foreground uppercase">
+                      {/* Section Info - expanded content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-orbitron font-bold text-white text-lg truncate">{section.title}</h3>
+                          <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase transition-colors ${
+                            section.type === 'hero' ? 'bg-neon-cyan/20 text-neon-cyan' :
+                            section.type === 'about' ? 'bg-neon-purple/20 text-neon-purple' :
+                            section.type === 'skills' ? 'bg-neon-green/20 text-neon-green' :
+                            section.type === 'projects' ? 'bg-neon-pink/20 text-neon-pink' :
+                            'bg-white/10 text-white'
+                          }`}>
                             {section.type}
                           </span>
                         </div>
+                        <p className="text-xs text-muted-foreground font-mono">
+                          {section.isVisible ? '✓ VISIBLE ON PAGE' : '✕ HIDDEN'}
+                          {section.content?.sectionHeading && ` • Heading: "${section.content.sectionHeading}"`}
+                        </p>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        <button
+                      {/* Action Buttons with better spacing */}
+                      <div className="flex items-center gap-2 ml-auto">
+                        {/* Visibility Toggle */}
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => handleToggleVisibility(section)}
-                          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                          className={`w-11 h-11 rounded-lg flex items-center justify-center transition-all ${
                             section.isVisible
                               ? 'bg-neon-green/20 text-neon-green hover:bg-neon-green/30'
                               : 'bg-muted/20 text-muted-foreground hover:bg-muted/30'
                           }`}
                           title={section.isVisible ? 'Hide section' : 'Show section'}
                         >
-                          {section.isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                        </button>
+                          {section.isVisible ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                        </motion.button>
 
-                        <button
+                        {/* Edit Button */}
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => setEditingSection(section)}
-                          className="w-10 h-10 rounded-lg bg-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/30 flex items-center justify-center transition-colors"
-                          title="Edit section"
+                          className="w-11 h-11 rounded-lg bg-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/30 flex items-center justify-center transition-colors"
+                          title={['experience', 'projects', 'skills'].includes(section.type) ? 'Manage items' : 'Edit section content'}
                         >
-                          <Settings className="w-4 h-4" />
-                        </button>
+                          <Settings className="w-5 h-5" />
+                        </motion.button>
 
-                        <button
+                        {/* Delete Button */}
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => handleDelete(section)}
-                          className="w-10 h-10 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 flex items-center justify-center transition-colors"
+                          className="w-11 h-11 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 flex items-center justify-center transition-colors"
                           title="Delete section"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                          <Trash2 className="w-5 h-5" />
+                        </motion.button>
                       </div>
                     </div>
+
+                    {/* Hover indicator line */}
+                    <div className="h-1 bg-gradient-to-r from-neon-cyan via-neon-purple to-neon-pink opacity-0 group-hover:opacity-100 transition-opacity" />
                   </motion.div>
                 ))}
               </div>
+
+              {sections.length === 0 && (
+                <div className="text-center py-12">
+                  <Layers className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-30" />
+                  <p className="text-muted-foreground">No sections yet</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -443,6 +481,74 @@ const AdminDashboard = () => {
                   </Button>
                 </div>
               </div>
+
+              {/* Layout & Viewports */}
+              <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6">
+                <h3 className="font-orbitron font-bold text-white mb-4 flex items-center gap-2">
+                  <PanelTop className="w-5 h-5 text-neon-cyan" />
+                  LAYOUT & VIEWPORTS
+                </h3>
+                <p className="text-muted-foreground mb-4">Control default section alignment, width behavior and mobile centering.</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-mono text-neon-cyan mb-2 block">DEFAULT_ALIGNMENT</label>
+                    <div className="flex gap-2">
+                      {['left', 'center', 'right'].map((a) => (
+                        <button
+                          key={a}
+                          onClick={() => updateSite({ layoutDefaults: { ...(site.layoutDefaults || {}), alignment: a as any } })}
+                          className={`px-3 py-2 rounded-lg text-sm font-mono transition-all ${site.layoutDefaults?.alignment === a ? 'bg-neon-cyan text-cyber-dark' : 'bg-cyber-dark/50 border border-neon-cyan/20 text-white'}`}
+                        >
+                          {a.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-mono text-neon-cyan mb-2 block">DEFAULT_WIDTH</label>
+                    <div className="flex gap-2">
+                      {['contained', 'full'].map((w) => (
+                        <button
+                          key={w}
+                          onClick={() => updateSite({ layoutDefaults: { ...(site.layoutDefaults || {}), width: w as any } })}
+                          className={`px-3 py-2 rounded-lg text-sm font-mono transition-all ${site.layoutDefaults?.width === w ? 'bg-neon-cyan text-cyber-dark' : 'bg-cyber-dark/50 border border-neon-cyan/20 text-white'}`}
+                        >
+                          {w.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="text-xs font-mono text-neon-cyan mb-2 block">FULL_HEIGHT_SECTIONS</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={!!site.layoutDefaults?.fullHeight}
+                        onChange={(e) => updateSite({ layoutDefaults: { ...(site.layoutDefaults || {}), fullHeight: e.target.checked } })}
+                        className="w-5 h-5 rounded"
+                      />
+                      <span className="text-sm text-muted-foreground">Allow sections to use full viewport height</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-mono text-neon-cyan mb-2 block">MOBILE_CENTER</label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={!!site.layoutDefaults?.mobileCenter}
+                        onChange={(e) => updateSite({ layoutDefaults: { ...(site.layoutDefaults || {}), mobileCenter: e.target.checked } })}
+                        className="w-5 h-5 rounded"
+                      />
+                      <span className="text-sm text-muted-foreground">Center content on small screens by default</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -451,15 +557,55 @@ const AdminDashboard = () => {
       {/* Section Editor Modal */}
       <AnimatePresence>
         {editingSection && (
-          <SectionEditor
-            section={editingSection}
-            onClose={() => setEditingSection(null)}
-            onSave={(updates) => {
-              updateSection(editingSection.id, updates);
-              setEditingSection(null);
-              showSaveMessage(`Section "${editingSection.title}" updated`);
-            }}
-          />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+            onClick={() => setEditingSection(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-cyber-dark border border-neon-cyan/50 rounded-xl max-w-2xl max-h-[90vh] overflow-y-auto w-full shadow-[0_0_40px_rgba(0,255,255,0.3)]"
+            >
+              {/* Header */}
+              <div className="sticky top-0 bg-cyber-dark border-b border-neon-cyan/30 p-6 flex items-center justify-between">
+                <h2 className="font-orbitron font-bold text-xl text-neon-cyan">
+                  {editingSection.type === 'experience' && 'MANAGE_EXPERIENCES'}
+                  {editingSection.type === 'projects' && 'MANAGE_PROJECTS'}
+                  {editingSection.type === 'skills' && 'MANAGE_SKILLS'}
+                  {!['experience', 'projects', 'skills'].includes(editingSection.type) && `EDIT_${editingSection.title.toUpperCase()}`}
+                </h2>
+                <button
+                  onClick={() => setEditingSection(null)}
+                  className="w-8 h-8 rounded-lg hover:bg-red-500/20 text-red-400 flex items-center justify-center"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                {editingSection.type === 'experience' && <ExperienceEditor />}
+                {editingSection.type === 'projects' && <ProjectsEditor />}
+                {editingSection.type === 'skills' && <SkillsEditor />}
+                {!['experience', 'projects', 'skills'].includes(editingSection.type) && (
+                  <ImprovedSectionEditor
+                    section={editingSection}
+                    onClose={() => setEditingSection(null)}
+                    onSave={(updates) => {
+                      updateSection(editingSection.id, updates);
+                      setEditingSection(null);
+                      showSaveMessage(`Section "${editingSection.title}" updated`);
+                    }}
+                  />
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

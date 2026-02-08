@@ -98,6 +98,114 @@ const SectionEditor = ({ section, onClose, onSave }: SectionEditorProps) => {
           />
         </div>
 
+        {/* Layout & Media */}
+        <div className="px-6 pb-4 border-b border-neon-cyan/10">
+          <label className="text-xs font-mono text-neon-cyan mb-2 block">LAYOUT & MEDIA</label>
+          <div className="grid gap-3">
+<div className="space-y-3">
+          <label className="text-xs font-mono text-neon-cyan mb-2 block">SECTION_IMAGE</label>
+          
+          {/* Image URL Input */}
+          <div>
+            <p className="text-xs text-muted-foreground mb-2">Paste image URL or upload file below</p>
+            <Input
+              value={(content?.imageUrl as string) || ''}
+              onChange={(e) => setContent((c: any) => ({ ...c, imageUrl: e.target.value }))}
+              placeholder="https://example.com/image.png"
+              className="bg-cyber-dark/50 border-neon-cyan/30 text-white font-mono text-sm"
+            />
+          </div>
+
+          {/* Upload Buttons */}
+          <div className="flex items-center gap-2">
+            <label className="flex-1">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                      setContent((c: any) => ({ ...c, imageUrl: ev.target?.result as string }));
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+              />
+              <div className="w-full px-4 py-2 rounded-lg border border-dashed border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10 flex items-center justify-center gap-2 transition-colors cursor-pointer">
+                <Plus className="w-4 h-4" />
+                Upload Image
+              </div>
+            </label>
+            {content?.imageUrl && (
+              <Button
+                onClick={() => setContent((c: any) => ({ ...c, imageUrl: undefined }))}
+                className="bg-red-500/20 text-red-400 hover:bg-red-500/30"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Image Preview */}
+          {content?.imageUrl && (
+            <div className="mt-4 p-3 rounded-lg bg-cyber-dark/30 border border-neon-cyan/20">
+              <p className="text-xs font-mono text-muted-foreground mb-2">PREVIEW</p>
+              <img src={content.imageUrl} alt="section preview" className="w-full max-h-40 object-cover rounded-lg border border-neon-cyan/20" />
+              <p className="text-xs text-muted-foreground mt-2 break-all">Size: {Math.round((content.imageUrl as string).length / 1024)} KB</p>
+                </div>
+              )}
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-2 items-center">
+              <div>
+                <label className="text-xs font-mono text-neon-cyan mb-2 block">ALIGNMENT</label>
+                <div className="flex gap-2">
+                  {['left', 'center', 'right'].map((a) => (
+                    <button
+                      key={a}
+                      onClick={() => setContent((c: any) => ({ ...c, alignment: a }))}
+                      className={`px-3 py-2 rounded-lg text-sm font-mono transition-all ${content?.alignment === a ? 'bg-neon-cyan text-cyber-dark' : 'bg-cyber-dark/50 border border-neon-cyan/20 text-white'}`}
+                    >
+                      {a.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-mono text-neon-cyan mb-2 block">WIDTH</label>
+                <div className="flex gap-2">
+                  {['contained', 'full'].map((w) => (
+                    <button
+                      key={w}
+                      onClick={() => setContent((c: any) => ({ ...c, width: w }))}
+                      className={`px-3 py-2 rounded-lg text-sm font-mono transition-all ${content?.width === w ? 'bg-neon-cyan text-cyber-dark' : 'bg-cyber-dark/50 border border-neon-cyan/20 text-white'}`}
+                    >
+                      {w.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-mono text-neon-cyan mb-2 block">MOBILE CENTER</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={!!content?.mobileCenter}
+                    onChange={(e) => setContent((c: any) => ({ ...c, mobileCenter: e.target.checked }))}
+                    className="w-5 h-5 rounded"
+                  />
+                  <span className="text-sm text-muted-foreground">Center content on small screens</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {renderEditor()}

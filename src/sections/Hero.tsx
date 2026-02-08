@@ -91,7 +91,18 @@ const Hero = ({ section }: { section: Section }) => {
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className={`grid gap-12 items-center ${content.imageUrl ? 'lg:grid-cols-2' : ''}`}>
+          {/* Section Image - if provided */}
+          {content.imageUrl && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="rounded-2xl overflow-hidden border-2 border-neon-cyan/30 shadow-glow-cyan order-2 lg:order-1"
+            >
+              <img src={content.imageUrl} alt="Hero Section" className="w-full h-full object-cover aspect-video" />
+            </motion.div>
+          )}
           {/* Left Column - Text Content */}
           <div className="text-center lg:text-left">
             {/* System Status Badge */}
