@@ -79,24 +79,46 @@ const Skills = ({ section }: { section: Section }) => {
   const [activeModule, setActiveModule] = useState<number | null>(null);
   const [hoveredSkill, setHoveredSkill] = useState<string | null>(null);
 
-  const icons = [Database, Cloud, Brain, Shield];
-  const colors = ['neon-cyan', 'neon-purple', 'neon-pink', 'neon-green'];
-  const descriptions = [
-    'Advanced data processing and visualization capabilities',
-    'Enterprise cloud infrastructure and DevOps expertise',
-    'Machine learning model development and deployment',
-    'Cybersecurity and compliance implementation',
-  ];
-  const skillModules: SkillModule[] =
-    Array.isArray(content.categories) && content.categories.length > 0
-      ? content.categories.map((cat: { name?: string; skills?: string[] }, i: number) => ({
-          title: (cat.name as string)?.toUpperCase().replace(/\s/g, '_') || defaultModules[i]?.title || 'CATEGORY',
-          icon: icons[i] || Database,
-          color: colors[i] || 'neon-cyan',
-          description: descriptions[i] || '',
-          skills: (cat.skills as string[] || []).map((name) => ({ name, level: 90, category: 'Custom' })),
-        }))
-      : defaultModules;
+  const categoryMeta: Record<string, { icon: React.ElementType; color: string; description: string }> = {
+    Analytics: { icon: Database, color: 'neon-cyan', description: 'Advanced data processing and visualization capabilities' },
+    Cloud: { icon: Cloud, color: 'neon-purple', description: 'Enterprise cloud infrastructure and DevOps expertise' },
+    'AI/ML': { icon: Brain, color: 'neon-pink', description: 'Machine learning model development and deployment' },
+    Security: { icon: Shield, color: 'neon-green', description: 'Cybersecurity and compliance implementation' },
+    Development: { icon: Cpu, color: 'neon-cyan', description: 'Full-stack delivery and modern application architecture' },
+    Database: { icon: Database, color: 'neon-purple', description: 'Data modeling and storage optimization' },
+    Tools: { icon: Shield, color: 'neon-green', description: 'Workflow automation and productivity tooling' },
+    Other: { icon: Brain, color: 'neon-pink', description: 'Additional competencies and specialty skills' },
+  };
+
+  const cmsSkills = Array.isArray(content.items) ? content.items : null;
+  const cmsModules: SkillModule[] | null = cmsSkills
+    ? Object.entries(
+        cmsSkills.reduce<Record<string, Skill[]>>((acc, item: { name?: string; level?: number; category?: string }) => {
+          const category = item.category || 'Other';
+          if (!acc[category]) acc[category] = [];
+          acc[category].push({
+            name: item.name || 'Untitled',
+            level: typeof item.level === 'number' ? item.level : 80,
+            category,
+          });
+          return acc;
+        }, {})
+      ).map(([category, skills]) => {
+        const meta = categoryMeta[category] || categoryMeta.Other;
+        return {
+          title: category.toUpperCase().replace(/\s/g, '_'),
+          icon: meta.icon,
+          color: meta.color,
+          description: meta.description,
+          skills,
+        };
+      })
+    : null;
+  const skillModules: SkillModule[] = cmsModules && cmsModules.length > 0 ? cmsModules : defaultModules;
+  const heading = (content.sectionHeading as string) || 'CAPABILITY.MODULES';
+  const headingParts = heading.split('.');
+  const headingPrimary = headingParts[0] || 'CAPABILITY';
+  const headingSecondary = headingParts.slice(1).join('.') || 'MODULES';
 
   const getColorClass = (color: string) => {
     const colorMap: Record<string, { text: string; bg: string; border: string; glow: string }> = {
@@ -129,8 +151,8 @@ const Skills = ({ section }: { section: Section }) => {
             <span className="text-sm text-neon-cyan font-mono">SKILL_MATRIX</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-orbitron font-bold mb-4">
-            <span className="text-white">CAPABILITY.</span>
-            <span className="text-gradient-cyber">MODULES</span>
+            <span className="text-white">{headingPrimary}.</span>
+            <span className="text-gradient-cyber">{headingSecondary}</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Advanced technological competencies optimized for next-generation digital solutions

@@ -3,7 +3,7 @@ import { useRef, useState } from 'react';
 import { 
   Send, Mail, MapPin, Github, Linkedin, Twitter, 
   Terminal, Cpu, CheckCircle, Loader2, AlertTriangle,
-  MessageSquare, Radio
+  MessageSquare, Radio, Phone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,10 @@ const Contact = ({ section }: { section: Section }) => {
     message: '',
   });
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const heading = (content.sectionHeading as string) || 'INITIATE.TRANSMISSION';
+  const headingParts = heading.split('.');
+  const headingPrimary = headingParts[0] || 'INITIATE';
+  const headingSecondary = headingParts.slice(1).join('.') || 'TRANSMISSION';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +50,7 @@ const Contact = ({ section }: { section: Section }) => {
 
   const contactMethods = [
     { icon: Mail, label: 'EMAIL', value: (content.email as string) || 'alex.morgan@email.com', href: `mailto:${(content.email as string) || 'alex.morgan@email.com'}`, color: 'neon-cyan' },
+    { icon: Phone, label: 'PHONE', value: (content.phone as string) || '+1 (555) 000-0000', href: (content.phone as string) ? `tel:${content.phone}` : '#', color: 'neon-green' },
     { icon: MapPin, label: 'LOCATION', value: (content.location as string) || 'San Francisco, CA', href: '#', color: 'neon-purple' },
     { icon: Radio, label: 'STATUS', value: 'ACCEPTING_CONTRACTS', href: '#', color: 'neon-green' },
   ];
@@ -78,8 +83,8 @@ const Contact = ({ section }: { section: Section }) => {
             <span className="text-sm text-neon-cyan font-mono">ESTABLISH_CONNECTION</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-orbitron font-bold mb-4">
-            <span className="text-white">INITIATE.</span>
-            <span className="text-gradient-cyber">TRANSMISSION</span>
+            <span className="text-white">{headingPrimary}.</span>
+            <span className="text-gradient-cyber">{headingSecondary}</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Secure communication channel established. Transmit your inquiry.

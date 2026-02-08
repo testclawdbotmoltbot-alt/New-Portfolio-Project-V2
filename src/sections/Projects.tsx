@@ -1,5 +1,5 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, Github, Terminal, Cpu, TrendingUp, ChevronLeft, ChevronRight, Lock, Unlock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { Section } from '@/contexts/ContentContext';
@@ -91,18 +91,70 @@ const Projects = ({ section }: { section: Section }) => {
   const [activeProject, setActiveProject] = useState(0);
   const [isDecrypting, setIsDecrypting] = useState(false);
 
-  const cmsProjects = Array.isArray(content.projects) ? content.projects : [];
-  const projects: Project[] = defaultProjects.map((p, i) => {
-    const cms = cmsProjects[i];
-    if (!cms) return p;
-    return {
-      ...p,
-      title: (cms.title as string) ?? p.title,
-      description: (cms.description as string) ?? p.description,
-    };
-  });
+  const cmsProjects = Array.isArray(content.items) ? content.items : null;
+  const fallbackImages = [
+    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=500&fit=crop',
+    'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=500&fit=crop',
+  ];
+  const projects: Project[] =
+    cmsProjects && cmsProjects.length > 0
+      ? cmsProjects.map(
+          (
+            item: {
+              id?: string;
+              title?: string;
+              description?: string;
+              shortDesc?: string;
+              image?: string;
+              tech?: string[];
+              impact?: string;
+              status?: string;
+            },
+            index: number
+          ) => {
+            const status = (item.status || 'Completed').toLowerCase();
+            const mappedStatus: Project['status'] =
+              status.includes('progress') ? 'active' : status.includes('plan') ? 'classified' : 'completed';
+            const impactMetric = item.impact
+              ? [{ label: 'Impact', value: item.impact }]
+              : [{ label: 'Status', value: item.status || 'Completed' }];
+            const techMetric = item.tech?.length
+              ? [{ label: 'Stack', value: `${item.tech.length}+` }]
+              : [];
+            const metrics = [...impactMetric, ...techMetric].slice(0, 3);
+            while (metrics.length < 3) {
+              metrics.push({ label: `Metric_${metrics.length + 1}`, value: '—' });
+            }
+            return {
+              id: item.id || `PRJ-${String(index + 1).padStart(3, '0')}`,
+              title: item.title || `Project ${index + 1}`,
+              codename: (item.shortDesc || `PROJECT_${index + 1}`).toUpperCase().replace(/\s/g, '_'),
+              classification: status.includes('plan') ? 'LEVEL_3' : status.includes('progress') ? 'LEVEL_4' : 'LEVEL_5',
+              description: item.description || 'Project details coming soon.',
+              image: item.image || fallbackImages[index % fallbackImages.length],
+              technologies: item.tech || [],
+              metrics,
+              status: mappedStatus,
+              links: {},
+            };
+          }
+        )
+      : defaultProjects;
 
   const currentProject = projects[activeProject];
+  const heading = (content.sectionHeading as string) || 'CLASSIFIED.DOSSIERS';
+  const headingParts = heading.split('.');
+  const headingPrimary = headingParts[0] || 'CLASSIFIED';
+  const headingSecondary = headingParts.slice(1).join('.') || 'DOSSIERS';
+
+  useEffect(() => {
+    if (projects.length === 0) return;
+    if (activeProject >= projects.length) {
+      setActiveProject(0);
+    }
+  }, [activeProject, projects.length]);
 
   const handleDecrypt = () => {
     setIsDecrypting(true);
@@ -110,11 +162,13 @@ const Projects = ({ section }: { section: Section }) => {
   };
 
   const nextProject = () => {
+    if (!projects.length) return;
     setActiveProject((prev) => (prev + 1) % projects.length);
     handleDecrypt();
   };
 
   const prevProject = () => {
+    if (!projects.length) return;
     setActiveProject((prev) => (prev - 1 + projects.length) % projects.length);
     handleDecrypt();
   };
@@ -139,125 +193,134 @@ const Projects = ({ section }: { section: Section }) => {
             <span className="text-sm text-neon-purple font-mono">PROJECT_ARCHIVES</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-orbitron font-bold mb-4">
-            <span className="text-white">CLASSIFIED.</span>
-            <span className="text-gradient-cyber">DOSSIERS</span>
+            <span className="text-white">{headingPrimary}.</span>
+            <span className="text-gradient-cyber">{headingSecondary}</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Access restricted project documentation. Decryption required for full details.
           </p>
         </motion.div>
 
+        {projects.length === 0 && (
+          <div className="text-center py-12 glass-panel rounded-xl border border-neon-purple/30">
+            <p className="text-muted-foreground font-mono">No projects yet. Add entries from the admin panel.</p>
+          </div>
+        )}
+
         {/* Project Navigation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex justify-center gap-3 mb-8 flex-wrap"
-        >
-          {projects.map((project, index) => (
-            <button
-              key={project.id}
-              onClick={() => {
-                setActiveProject(index);
-                handleDecrypt();
-              }}
-              className={`px-4 py-2 rounded-lg font-mono text-sm transition-all duration-300 ${
-                index === activeProject
-                  ? 'bg-neon-purple text-cyber-dark shadow-glow-purple'
-                  : 'bg-cyber-panel border border-neon-purple/30 text-neon-purple hover:border-neon-purple'
-              }`}
-            >
-              {project.id}
-            </button>
-          ))}
-        </motion.div>
+        {projects.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex justify-center gap-3 mb-8 flex-wrap"
+          >
+            {projects.map((project, index) => (
+              <button
+                key={project.id}
+                onClick={() => {
+                  setActiveProject(index);
+                  handleDecrypt();
+                }}
+                className={`px-4 py-2 rounded-lg font-mono text-sm transition-all duration-300 ${
+                  index === activeProject
+                    ? 'bg-neon-purple text-cyber-dark shadow-glow-purple'
+                    : 'bg-cyber-panel border border-neon-purple/30 text-neon-purple hover:border-neon-purple'
+                }`}
+              >
+                {project.id}
+              </button>
+            ))}
+          </motion.div>
+        )}
 
         {/* Main Project Display */}
-        <motion.div
-          key={activeProject}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="grid lg:grid-cols-2 gap-8"
-        >
-          {/* Project Visual */}
-          <div className="relative">
-            <div className="relative rounded-xl overflow-hidden border border-neon-purple/30 group">
-              {/* Status Badge */}
-              <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
-                <div className={`px-3 py-1 rounded-full text-xs font-mono flex items-center gap-1 ${
-                  currentProject.status === 'active' 
-                    ? 'bg-neon-green/20 text-neon-green border border-neon-green/50' 
-                    : 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50'
-                }`}>
-                  <div className={`w-2 h-2 rounded-full ${currentProject.status === 'active' ? 'bg-neon-green animate-pulse' : 'bg-neon-cyan'}`} />
-                  {currentProject.status.toUpperCase()}
+        {projects.length > 0 && currentProject && (
+          <motion.div
+            key={activeProject}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="grid lg:grid-cols-2 gap-8"
+          >
+            {/* Project Visual */}
+            <div className="relative">
+              <div className="relative rounded-xl overflow-hidden border border-neon-purple/30 group">
+                {/* Status Badge */}
+                <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+                  <div className={`px-3 py-1 rounded-full text-xs font-mono flex items-center gap-1 ${
+                    currentProject.status === 'active' 
+                      ? 'bg-neon-green/20 text-neon-green border border-neon-green/50' 
+                      : 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/50'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full ${currentProject.status === 'active' ? 'bg-neon-green animate-pulse' : 'bg-neon-cyan'}`} />
+                    {currentProject.status.toUpperCase()}
+                  </div>
+                  <div className="px-3 py-1 rounded-full text-xs font-mono bg-neon-yellow/20 text-neon-yellow border border-neon-yellow/50 flex items-center gap-1">
+                    {currentProject.classification === 'LEVEL_5' ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                    {currentProject.classification}
+                  </div>
                 </div>
-                <div className="px-3 py-1 rounded-full text-xs font-mono bg-neon-yellow/20 text-neon-yellow border border-neon-yellow/50 flex items-center gap-1">
-                  {currentProject.classification === 'LEVEL_5' ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-                  {currentProject.classification}
+
+                {/* Image */}
+                <div className="relative h-[300px] lg:h-[400px]">
+                  <img
+                    src={currentProject.image}
+                    alt={currentProject.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-cyber-dark via-cyber-dark/50 to-transparent" />
+                  
+                  {/* Decryption Overlay */}
+                  {isDecrypting && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 bg-cyber-dark/90 flex items-center justify-center"
+                    >
+                      <div className="text-center">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          className="w-16 h-16 border-4 border-neon-purple border-t-transparent rounded-full mx-auto mb-4"
+                        />
+                        <p className="text-neon-purple font-mono">DECRYPTING...</p>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
-              </div>
 
-              {/* Image */}
-              <div className="relative h-[300px] lg:h-[400px]">
-                <img
-                  src={currentProject.image}
-                  alt={currentProject.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-cyber-dark via-cyber-dark/50 to-transparent" />
-                
-                {/* Decryption Overlay */}
-                {isDecrypting && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 bg-cyber-dark/90 flex items-center justify-center"
-                  >
-                    <div className="text-center">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                        className="w-16 h-16 border-4 border-neon-purple border-t-transparent rounded-full mx-auto mb-4"
-                      />
-                      <p className="text-neon-purple font-mono">DECRYPTING...</p>
-                    </div>
-                  </motion.div>
-                )}
+                {/* Navigation Arrows */}
+                <button
+                  onClick={prevProject}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cyber-dark/80 border border-neon-purple/50 flex items-center justify-center text-neon-purple hover:bg-neon-purple hover:text-cyber-dark transition-all duration-300"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextProject}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cyber-dark/80 border border-neon-purple/50 flex items-center justify-center text-neon-purple hover:bg-neon-purple hover:text-cyber-dark transition-all duration-300"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
-
-              {/* Navigation Arrows */}
-              <button
-                onClick={prevProject}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cyber-dark/80 border border-neon-purple/50 flex items-center justify-center text-neon-purple hover:bg-neon-purple hover:text-cyber-dark transition-all duration-300"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={nextProject}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-cyber-dark/80 border border-neon-purple/50 flex items-center justify-center text-neon-purple hover:bg-neon-purple hover:text-cyber-dark transition-all duration-300"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
             </div>
-          </div>
 
-          {/* Project Details */}
-          <div className="space-y-6">
-            {/* Header */}
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-mono text-neon-purple">{currentProject.codename}</span>
+            {/* Project Details */}
+            <div className="space-y-6">
+              {/* Header */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-mono text-neon-purple">{currentProject.codename}</span>
+                </div>
+                <h3 className="text-2xl lg:text-3xl font-orbitron font-bold text-white mb-4">
+                  {currentProject.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {currentProject.description}
+                </p>
               </div>
-              <h3 className="text-2xl lg:text-3xl font-orbitron font-bold text-white mb-4">
-                {currentProject.title}
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {currentProject.description}
-              </p>
-            </div>
 
             {/* Technologies */}
             <div>
@@ -312,25 +375,28 @@ const Projects = ({ section }: { section: Section }) => {
               )}
             </div>
           </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Progress Indicators */}
-        <div className="flex justify-center gap-2 mt-8">
-          {projects.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setActiveProject(index);
-                handleDecrypt();
-              }}
-              className={`h-1 rounded-full transition-all duration-300 ${
-                index === activeProject 
-                  ? 'w-8 bg-neon-purple shadow-glow-purple' 
-                  : 'w-2 bg-neon-purple/30 hover:bg-neon-purple/50'
-              }`}
-            />
-          ))}
-        </div>
+        {projects.length > 0 && (
+          <div className="flex justify-center gap-2 mt-8">
+            {projects.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setActiveProject(index);
+                  handleDecrypt();
+                }}
+                className={`h-1 rounded-full transition-all duration-300 ${
+                  index === activeProject 
+                    ? 'w-8 bg-neon-purple shadow-glow-purple' 
+                    : 'w-2 bg-neon-purple/30 hover:bg-neon-purple/50'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
