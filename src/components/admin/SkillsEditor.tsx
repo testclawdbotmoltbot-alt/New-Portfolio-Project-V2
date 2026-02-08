@@ -73,7 +73,7 @@ export default function SkillsEditor() {
     }
   };
 
-  const categories = ['Analytics', 'Cloud', 'AI/ML', 'Development', 'Database', 'Tools', 'Other'];
+  const categories = ['Analytics', 'Cloud', 'AI/ML', 'Security', 'Development', 'Database', 'Tools', 'Other'];
 
   return (
     <div className="space-y-6">
