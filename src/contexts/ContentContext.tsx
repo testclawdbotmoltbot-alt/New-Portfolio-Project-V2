@@ -289,9 +289,10 @@ const defaultSections: Section[] = [
     title: 'Skills Section', 
     content: { 
       items: [
-        { id: 'skill-1', name: 'Data Analytics', level: 95, icon: '📊' },
-        { id: 'skill-2', name: 'Cloud Architecture', level: 90, icon: '☁️' },
-        { id: 'skill-3', name: 'AI/ML', level: 85, icon: '🤖' },
+        { id: 'skill-1', name: 'Data Analytics', level: 95, icon: '📊', category: 'Analytics' },
+        { id: 'skill-2', name: 'Cloud Architecture', level: 90, icon: '☁️', category: 'Cloud' },
+        { id: 'skill-3', name: 'AI/ML', level: 85, icon: '🤖', category: 'AI/ML' },
+        { id: 'skill-4', name: 'Data Security', level: 88, icon: '🔒', category: 'Security' },
       ]
     }, 
     isVisible: true, 
@@ -302,7 +303,48 @@ const defaultSections: Section[] = [
     type: 'projects', 
     title: 'Projects Section', 
     content: { 
-      items: []
+      items: [
+        {
+          id: 'PRJ-001',
+          title: 'Enterprise Data Platform',
+          description: 'Comprehensive data analytics platform consolidating 15+ enterprise data sources. Implements real-time ETL pipelines, predictive analytics, and AI-driven insights dashboard.',
+          shortDesc: 'Real-time analytics platform',
+          image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop',
+          tech: ['Python', 'AWS', 'Snowflake', 'Airflow', 'TensorFlow'],
+          impact: '$2.4M savings',
+          status: 'Completed',
+        },
+        {
+          id: 'PRJ-002',
+          title: 'AI Customer Intelligence',
+          description: 'Advanced customer segmentation and churn prediction system using deep learning. Achieves 92% prediction accuracy with real-time model updates.',
+          shortDesc: 'Churn prediction system',
+          image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=500&fit=crop',
+          tech: ['PyTorch', 'AWS SageMaker', 'React', 'PostgreSQL', 'Redis'],
+          impact: '92% accuracy',
+          status: 'In Progress',
+        },
+        {
+          id: 'PRJ-003',
+          title: 'Cloud Migration Initiative',
+          description: 'Large-scale cloud migration of 200+ applications to AWS. Implemented Infrastructure as Code, CI/CD pipelines, and zero-downtime deployment strategies.',
+          shortDesc: 'Migration of 200+ apps',
+          image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=500&fit=crop',
+          tech: ['Terraform', 'Kubernetes', 'Docker', 'Jenkins', 'AWS'],
+          impact: '200+ apps migrated',
+          status: 'Completed',
+        },
+        {
+          id: 'PRJ-004',
+          title: 'Real-time Analytics Hub',
+          description: 'IoT-enabled logistics analytics platform with real-time fleet tracking, route optimization, and predictive maintenance capabilities.',
+          shortDesc: 'IoT logistics analytics',
+          image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=500&fit=crop',
+          tech: ['Node.js', 'MongoDB', 'WebSocket', 'D3.js', 'Kafka'],
+          impact: '$1.2M fuel savings',
+          status: 'In Progress',
+        },
+      ]
     }, 
     isVisible: true, 
     order: 3 
@@ -312,7 +354,71 @@ const defaultSections: Section[] = [
     type: 'experience', 
     title: 'Experience Section', 
     content: { 
-      items: []
+      items: [
+        {
+          id: 'EXP-004',
+          title: 'Senior Digital Technology Analyst',
+          company: 'TechVision Solutions',
+          location: 'San Francisco, CA',
+          period: '2022 - PRESENT',
+          type: 'FULL_TIME',
+          description: 'Leading enterprise digital transformation initiatives. Architecting cloud-native solutions and implementing AI-driven analytics platforms for Fortune 500 clients.',
+          achievements: [
+            'Led $5M digital transformation project for Fortune 100 client',
+            'Developed proprietary analytics framework reducing delivery time by 40%',
+            'Established data governance standards across 12 organizations',
+            'Mentored team of 8 analysts, 3 promoted to senior roles',
+          ],
+          tech: ['AWS', 'Python', 'TensorFlow', 'Kubernetes', 'Snowflake'],
+        },
+        {
+          id: 'EXP-003',
+          title: 'Technology Analyst',
+          company: 'DataDriven Consulting',
+          location: 'New York, NY',
+          period: '2019 - 2022',
+          type: 'FULL_TIME',
+          description: 'Delivered comprehensive technology assessments and data-driven solutions across finance, healthcare, and retail verticals.',
+          achievements: [
+            'Designed BI solutions for 25+ enterprise clients',
+            'Achieved 95% client satisfaction rate',
+            'Created automated reporting saving 200+ hours monthly',
+            'Awarded "Analyst of the Year" 2021',
+          ],
+          tech: ['Azure', 'PowerBI', 'SQL', 'Python', 'Apache Spark'],
+        },
+        {
+          id: 'EXP-002',
+          title: 'Business Intelligence Analyst',
+          company: 'Global Retail Corp',
+          location: 'Chicago, IL',
+          period: '2017 - 2019',
+          type: 'FULL_TIME',
+          description: 'Built enterprise BI infrastructure, created executive dashboards, and provided strategic insights supporting $2B revenue decisions.',
+          achievements: [
+            'Developed real-time sales dashboard for 500+ store managers',
+            'Identified $2M cost savings through supply chain analytics',
+            'Implemented predictive models improving inventory accuracy 35%',
+            'Trained 50+ employees on BI tools and best practices',
+          ],
+          tech: ['Tableau', 'R', 'SQL Server', 'Excel', 'SAP'],
+        },
+        {
+          id: 'EXP-001',
+          title: 'Junior Data Analyst',
+          company: 'StartUp Innovations',
+          location: 'Austin, TX',
+          period: '2016 - 2017',
+          type: 'FULL_TIME',
+          description: 'Established foundational analytics infrastructure and developed data collection workflows for rapidly growing tech startup.',
+          achievements: [
+            'Built analytics infrastructure from ground up',
+            'Created ETL pipelines processing 1M+ records daily',
+            'Developed customer segmentation improving marketing ROI 25%',
+          ],
+          tech: ['Python', 'PostgreSQL', 'Pandas', 'scikit-learn'],
+        },
+      ]
     }, 
     isVisible: true, 
     order: 4 
@@ -322,7 +428,48 @@ const defaultSections: Section[] = [
     type: 'testimonials', 
     title: 'Testimonials Section', 
     content: { 
-      items: []
+      testimonials: [
+        {
+          id: 'TST-001',
+          quote: "Alex's expertise in digital transformation was instrumental in our company's successful cloud migration. The proprietary analytics framework developed reduced our project delivery time by 40% while maintaining 99.9% uptime.",
+          author: 'Sarah Mitchell',
+          role: 'Chief Technology Officer',
+          company: 'TechCorp Industries',
+          clearance: 'LEVEL_5',
+          rating: 5,
+          verified: true,
+        },
+        {
+          id: 'TST-002',
+          quote: 'The AI-driven customer intelligence system Alex architected achieved 92% prediction accuracy. Our churn reduction of 35% directly translated to $5M in retained revenue. Exceptional technical leadership.',
+          author: 'Michael Chen',
+          role: 'VP of Operations',
+          company: 'Global Finance Group',
+          clearance: 'LEVEL_4',
+          rating: 5,
+          verified: true,
+        },
+        {
+          id: 'TST-003',
+          quote: 'Alex led our cloud migration of 200+ applications with zero critical downtime. The infrastructure-as-code implementation and CI/CD pipelines established continue to drive our DevOps excellence.',
+          author: 'Emily Rodriguez',
+          role: 'Director of Digital Strategy',
+          company: 'RetailMax Solutions',
+          clearance: 'LEVEL_4',
+          rating: 5,
+          verified: true,
+        },
+        {
+          id: 'TST-004',
+          quote: "The real-time analytics dashboard transformed our logistics operations. Route efficiency improved 32% and fuel savings exceeded $1.2M annually. Alex's understanding of both technology and business is rare.",
+          author: 'David Park',
+          role: 'Chief Executive Officer',
+          company: 'FastTrack Logistics',
+          clearance: 'LEVEL_3',
+          rating: 5,
+          verified: true,
+        },
+      ]
     }, 
     isVisible: true, 
     order: 5 

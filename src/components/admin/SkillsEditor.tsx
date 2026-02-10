@@ -84,7 +84,7 @@ export default function SkillsEditor() {
     }
   };
 
-  const categories = ['Analytics', 'Cloud', 'AI/ML', 'Development', 'Database', 'Tools', 'Other'];
+  const categories = ['Analytics', 'Cloud', 'AI/ML', 'Security', 'Development', 'Database', 'Tools', 'Other'];
   const filteredSkills = skills.filter(skill => 
     skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     skill.category?.toLowerCase().includes(searchQuery.toLowerCase())

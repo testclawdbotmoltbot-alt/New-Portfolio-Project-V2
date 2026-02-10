@@ -14,58 +14,37 @@ interface Testimonial {
   verified: boolean;
 }
 
-const Testimonials = ({ section: _section }: { section: Section }) => {
+const Testimonials = ({ section }: { section: Section }) => {
+  const content = section?.content || {};
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [activeIndex, setActiveIndex] = useState(0);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  const testimonials: Testimonial[] = [
-    {
-      id: 'TST-001',
-      quote: "Alex's expertise in digital transformation was instrumental in our company's successful cloud migration. The proprietary analytics framework developed reduced our project delivery time by 40% while maintaining 99.9% uptime.",
-      author: 'Sarah Mitchell',
-      role: 'Chief Technology Officer',
-      company: 'TechCorp Industries',
-      clearance: 'LEVEL_5',
-      rating: 5,
-      verified: true,
-    },
-    {
-      id: 'TST-002',
-      quote: "The AI-driven customer intelligence system Alex architected achieved 92% prediction accuracy. Our churn reduction of 35% directly translated to $5M in retained revenue. Exceptional technical leadership.",
-      author: 'Michael Chen',
-      role: 'VP of Operations',
-      company: 'Global Finance Group',
-      clearance: 'LEVEL_4',
-      rating: 5,
-      verified: true,
-    },
-    {
-      id: 'TST-003',
-      quote: "Alex led our cloud migration of 200+ applications with zero critical downtime. The infrastructure-as-code implementation and CI/CD pipelines established continue to drive our DevOps excellence.",
-      author: 'Emily Rodriguez',
-      role: 'Director of Digital Strategy',
-      company: 'RetailMax Solutions',
-      clearance: 'LEVEL_4',
-      rating: 5,
-      verified: true,
-    },
-    {
-      id: 'TST-004',
-      quote: "The real-time analytics dashboard transformed our logistics operations. Route efficiency improved 32% and fuel savings exceeded $1.2M annually. Alex's understanding of both technology and business is rare.",
-      author: 'David Park',
-      role: 'Chief Executive Officer',
-      company: 'FastTrack Logistics',
-      clearance: 'LEVEL_3',
-      rating: 5,
-      verified: true,
-    },
-  ];
+  const cmsTestimonials = Array.isArray(content.testimonials) ? content.testimonials : null;
+  const testimonials: Testimonial[] =
+    cmsTestimonials && cmsTestimonials.length > 0
+      ? cmsTestimonials.map((item: Testimonial, index: number) => ({
+          ...item,
+          id: item.id || `TST-${String(index + 1).padStart(3, '0')}`,
+          quote: item.quote || 'Testimonial coming soon.',
+          author: item.author || 'Anonymous',
+          role: item.role || 'Client',
+          company: item.company || '',
+          clearance: item.clearance || 'LEVEL_3',
+          rating: item.rating || 5,
+          verified: item.verified ?? true,
+        }))
+      : [];
+  const heading = (content.sectionHeading as string) || 'ENDORSEMENT.DATABASE';
+  const headingParts = heading.split('.');
+  const headingPrimary = headingParts[0] || 'ENDORSEMENT';
+  const headingSecondary = headingParts.slice(1).join('.') || 'DATABASE';
 
   const currentTestimonial = testimonials[activeIndex];
 
   const nextTestimonial = () => {
+    if (!testimonials.length) return;
     setIsVerifying(true);
     setTimeout(() => {
       setActiveIndex((prev) => (prev + 1) % testimonials.length);
@@ -74,6 +53,7 @@ const Testimonials = ({ section: _section }: { section: Section }) => {
   };
 
   const prevTestimonial = () => {
+    if (!testimonials.length) return;
     setIsVerifying(true);
     setTimeout(() => {
       setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
@@ -83,9 +63,17 @@ const Testimonials = ({ section: _section }: { section: Section }) => {
 
   // Auto-rotate testimonials
   useEffect(() => {
+    if (testimonials.length === 0) return;
     const timer = setInterval(nextTestimonial, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [testimonials.length]);
+
+  useEffect(() => {
+    if (testimonials.length === 0) return;
+    if (activeIndex >= testimonials.length) {
+      setActiveIndex(0);
+    }
+  }, [activeIndex, testimonials.length]);
 
   return (
     <section id="testimonials" className="relative py-24 lg:py-32 overflow-hidden">
@@ -132,136 +120,148 @@ const Testimonials = ({ section: _section }: { section: Section }) => {
             <span className="text-sm text-neon-purple font-mono">CLIENT_VERIFICATIONS</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-orbitron font-bold mb-4">
-            <span className="text-white">ENDORSEMENT.</span>
-            <span className="text-gradient-cyber">DATABASE</span>
+            <span className="text-white">{headingPrimary}.</span>
+            <span className="text-gradient-cyber">{headingSecondary}</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Cryptographically verified testimonials from enterprise partners
           </p>
         </motion.div>
 
+        {testimonials.length === 0 && (
+          <div className="text-center py-12 glass-panel rounded-xl border border-neon-purple/30">
+            <p className="text-muted-foreground font-mono">No testimonials yet. Add them in the admin editor.</p>
+          </div>
+        )}
+
         {/* Main Testimonial Display */}
-        <motion.div
-          key={activeIndex}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative"
-        >
-          <div className="glass-panel rounded-2xl border border-neon-purple/30 overflow-hidden">
-            {/* Verification Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neon-purple/20 bg-neon-purple/5">
-              <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-neon-green" />
-                <span className="text-sm font-mono text-neon-green">VERIFIED_ENDORSEMENT</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-neon-purple" />
-                <span className="text-xs font-mono text-neon-purple">{currentTestimonial.clearance}</span>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-8 lg:p-12 relative">
-              {/* Verification Overlay */}
-              {isVerifying && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-cyber-dark/95 flex items-center justify-center z-10"
-                >
-                  <div className="text-center">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="w-16 h-16 border-4 border-neon-green border-t-transparent rounded-full mx-auto mb-4"
-                    />
-                    <p className="text-neon-green font-mono">VERIFYING_SIGNATURE...</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Quote Icon */}
-              <div className="absolute top-6 left-6 w-12 h-12 rounded-xl bg-neon-purple/20 border border-neon-purple/50 flex items-center justify-center">
-                <Quote className="w-6 h-6 text-neon-purple" />
-              </div>
-
-              {/* Rating */}
-              <div className="flex justify-center gap-1 mb-6">
-                {[...Array(currentTestimonial.rating)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                  >
-                    <Star className="w-6 h-6 fill-neon-yellow text-neon-yellow" />
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Quote Text */}
-              <blockquote className="text-xl lg:text-2xl text-center text-white leading-relaxed mb-8 font-light">
-                "{currentTestimonial.quote}"
-              </blockquote>
-
-              {/* Author Info */}
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center mb-4">
-                  <span className="text-2xl font-orbitron font-bold text-white">
-                    {currentTestimonial.author.split(' ').map(n => n[0]).join('')}
+        {testimonials.length > 0 && currentTestimonial && (
+          <motion.div
+            key={activeIndex}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="relative"
+          >
+            <div className="glass-panel rounded-2xl border border-neon-purple/30 overflow-hidden">
+              {/* Verification Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-neon-purple/20 bg-neon-purple/5">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-neon-green" />
+                  <span className="text-sm font-mono text-neon-green">
+                    {currentTestimonial.verified ? 'VERIFIED_ENDORSEMENT' : 'UNVERIFIED_ENDORSEMENT'}
                   </span>
                 </div>
-                <div className="text-center">
-                  <div className="font-orbitron font-bold text-white text-lg">
-                    {currentTestimonial.author}
+                <div className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-neon-purple" />
+                  <span className="text-xs font-mono text-neon-purple">{currentTestimonial.clearance}</span>
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="p-8 lg:p-12 relative">
+                {/* Verification Overlay */}
+                {isVerifying && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-cyber-dark/95 flex items-center justify-center z-10"
+                  >
+                    <div className="text-center">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        className="w-16 h-16 border-4 border-neon-green border-t-transparent rounded-full mx-auto mb-4"
+                      />
+                      <p className="text-neon-green font-mono">VERIFYING_SIGNATURE...</p>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Quote Icon */}
+                <div className="absolute top-6 left-6 w-12 h-12 rounded-xl bg-neon-purple/20 border border-neon-purple/50 flex items-center justify-center">
+                  <Quote className="w-6 h-6 text-neon-purple" />
+                </div>
+
+                {/* Rating */}
+                <div className="flex justify-center gap-1 mb-6">
+                  {[...Array(currentTestimonial.rating)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: i * 0.1 }}
+                    >
+                      <Star className="w-6 h-6 fill-neon-yellow text-neon-yellow" />
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Quote Text */}
+                <blockquote className="text-xl lg:text-2xl text-center text-white leading-relaxed mb-8 font-light">
+                  "{currentTestimonial.quote}"
+                </blockquote>
+
+                {/* Author Info */}
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-neon-purple to-neon-cyan flex items-center justify-center mb-4">
+                    <span className="text-2xl font-orbitron font-bold text-white">
+                      {currentTestimonial.author.split(' ').map(n => n[0]).join('')}
+                    </span>
                   </div>
-                  <div className="text-neon-cyan">{currentTestimonial.role}</div>
-                  <div className="text-sm text-muted-foreground">{currentTestimonial.company}</div>
+                  <div className="text-center">
+                    <div className="font-orbitron font-bold text-white text-lg">
+                      {currentTestimonial.author}
+                    </div>
+                    <div className="text-neon-cyan">{currentTestimonial.role}</div>
+                    <div className="text-sm text-muted-foreground">{currentTestimonial.company}</div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* Navigation */}
-        <div className="flex items-center justify-center gap-4 mt-8">
-          <button
-            onClick={prevTestimonial}
-            className="w-12 h-12 rounded-full bg-cyber-panel border border-neon-purple/50 flex items-center justify-center text-neon-purple hover:bg-neon-purple hover:text-cyber-dark transition-all duration-300"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+        {testimonials.length > 0 && (
+          <div className="flex items-center justify-center gap-4 mt-8">
+            <button
+              onClick={prevTestimonial}
+              className="w-12 h-12 rounded-full bg-cyber-panel border border-neon-purple/50 flex items-center justify-center text-neon-purple hover:bg-neon-purple hover:text-cyber-dark transition-all duration-300"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
 
-          {/* Indicators */}
-          <div className="flex gap-2">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setIsVerifying(true);
-                  setTimeout(() => {
-                    setActiveIndex(index);
-                    setIsVerifying(false);
-                  }, 800);
-                }}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === activeIndex
-                    ? 'w-8 bg-neon-purple shadow-glow-purple'
-                    : 'w-2 bg-neon-purple/30 hover:bg-neon-purple/50'
-                }`}
-              />
-            ))}
+            {/* Indicators */}
+            <div className="flex gap-2">
+              {testimonials.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setIsVerifying(true);
+                    setTimeout(() => {
+                      setActiveIndex(index);
+                      setIsVerifying(false);
+                    }, 800);
+                  }}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index === activeIndex
+                      ? 'w-8 bg-neon-purple shadow-glow-purple'
+                      : 'w-2 bg-neon-purple/30 hover:bg-neon-purple/50'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={nextTestimonial}
+              className="w-12 h-12 rounded-full bg-cyber-panel border border-neon-purple/50 flex items-center justify-center text-neon-purple hover:bg-neon-purple hover:text-cyber-dark transition-all duration-300"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
-
-          <button
-            onClick={nextTestimonial}
-            className="w-12 h-12 rounded-full bg-cyber-panel border border-neon-purple/50 flex items-center justify-center text-neon-purple hover:bg-neon-purple hover:text-cyber-dark transition-all duration-300"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
+        )}
 
         {/* Trust Indicators */}
         <motion.div

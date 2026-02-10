@@ -15,76 +15,30 @@ interface ExperienceItem {
   tech: string[];
 }
 
-const Experience = ({ section: _section }: { section: Section }) => {
+const Experience = ({ section }: { section: Section }) => {
+  const content = section?.content || {};
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
-  const experiences: ExperienceItem[] = [
-    {
-      id: 'EXP-004',
-      title: 'Senior Digital Technology Analyst',
-      company: 'TechVision Solutions',
-      location: 'San Francisco, CA',
-      period: '2022 - PRESENT',
-      type: 'FULL_TIME',
-      description: 'Leading enterprise digital transformation initiatives. Architecting cloud-native solutions and implementing AI-driven analytics platforms for Fortune 500 clients.',
-      achievements: [
-        'Led $5M digital transformation project for Fortune 100 client',
-        'Developed proprietary analytics framework reducing delivery time by 40%',
-        'Established data governance standards across 12 organizations',
-        'Mentored team of 8 analysts, 3 promoted to senior roles',
-      ],
-      tech: ['AWS', 'Python', 'TensorFlow', 'Kubernetes', 'Snowflake'],
-    },
-    {
-      id: 'EXP-003',
-      title: 'Technology Analyst',
-      company: 'DataDriven Consulting',
-      location: 'New York, NY',
-      period: '2019 - 2022',
-      type: 'FULL_TIME',
-      description: 'Delivered comprehensive technology assessments and data-driven solutions across finance, healthcare, and retail verticals.',
-      achievements: [
-        'Designed BI solutions for 25+ enterprise clients',
-        'Achieved 95% client satisfaction rate',
-        'Created automated reporting saving 200+ hours monthly',
-        'Awarded "Analyst of the Year" 2021',
-      ],
-      tech: ['Azure', 'PowerBI', 'SQL', 'Python', 'Apache Spark'],
-    },
-    {
-      id: 'EXP-002',
-      title: 'Business Intelligence Analyst',
-      company: 'Global Retail Corp',
-      location: 'Chicago, IL',
-      period: '2017 - 2019',
-      type: 'FULL_TIME',
-      description: 'Built enterprise BI infrastructure, created executive dashboards, and provided strategic insights supporting $2B revenue decisions.',
-      achievements: [
-        'Developed real-time sales dashboard for 500+ store managers',
-        'Identified $2M cost savings through supply chain analytics',
-        'Implemented predictive models improving inventory accuracy 35%',
-        'Trained 50+ employees on BI tools and best practices',
-      ],
-      tech: ['Tableau', 'R', 'SQL Server', 'Excel', 'SAP'],
-    },
-    {
-      id: 'EXP-001',
-      title: 'Junior Data Analyst',
-      company: 'StartUp Innovations',
-      location: 'Austin, TX',
-      period: '2016 - 2017',
-      type: 'FULL_TIME',
-      description: 'Established foundational analytics infrastructure and developed data collection workflows for rapidly growing tech startup.',
-      achievements: [
-        'Built analytics infrastructure from ground up',
-        'Created ETL pipelines processing 1M+ records daily',
-        'Developed customer segmentation improving marketing ROI 25%',
-      ],
-      tech: ['Python', 'PostgreSQL', 'Pandas', 'scikit-learn'],
-    },
-  ];
+  const cmsExperiences = Array.isArray(content.items) ? content.items : null;
+  const experiences: ExperienceItem[] =
+    cmsExperiences && cmsExperiences.length > 0
+      ? cmsExperiences.map((item: ExperienceItem, index: number) => ({
+          ...item,
+          id: item.id || `EXP-${String(index + 1).padStart(3, '0')}`,
+          achievements: Array.isArray(item.achievements) ? item.achievements : [],
+          tech: Array.isArray(item.tech) ? item.tech : [],
+          description: item.description || 'Experience details coming soon.',
+          location: item.location || 'Remote',
+          period: item.period || 'TBD',
+          type: item.type || 'FULL_TIME',
+        }))
+      : [];
+  const heading = (content.sectionHeading as string) || 'MISSION.HISTORY';
+  const headingParts = heading.split('.');
+  const headingPrimary = headingParts[0] || 'MISSION';
+  const headingSecondary = headingParts.slice(1).join('.') || 'HISTORY';
 
   return (
     <section id="experience" className="relative py-24 lg:py-32 overflow-hidden">
@@ -107,13 +61,19 @@ const Experience = ({ section: _section }: { section: Section }) => {
             <span className="text-sm text-neon-cyan font-mono">CAREER_LOG</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-orbitron font-bold mb-4">
-            <span className="text-white">MISSION.</span>
-            <span className="text-gradient-cyber">HISTORY</span>
+            <span className="text-white">{headingPrimary}.</span>
+            <span className="text-gradient-cyber">{headingSecondary}</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Chronological deployment record across enterprise environments
           </p>
         </motion.div>
+
+        {experiences.length === 0 && (
+          <div className="text-center py-12 glass-panel rounded-xl border border-neon-cyan/30">
+            <p className="text-muted-foreground font-mono">No experience entries yet. Add them in the admin panel.</p>
+          </div>
+        )}
 
         {/* Timeline */}
         <div className="relative">
