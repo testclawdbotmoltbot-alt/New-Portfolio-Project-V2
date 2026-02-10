@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, ChevronDown } from 'lucide-react';
+import { Trash2, Plus, ChevronDown, Copy } from 'lucide-react';
 import { useContent } from '@/contexts/ContentContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -55,20 +55,35 @@ export default function ExperienceEditor() {
     setEditingId(item.id);
   };
 
+  const handleFieldChange = (id: string, field: keyof ExperienceItem, value: any) => {
+    setExperiences(prev =>
+      prev.map(exp =>
+        exp.id === id ? { ...exp, [field]: value } : exp
+      )
+    );
+  };
+
   const handleSave = () => {
-    if (!formData.title || !formData.company) {
-      alert('Please fill in at least title and company');
+    if (!formData.title) {
+      alert('Please enter a job title');
+      return;
+    }
+    if (!formData.company) {
+      alert('Please enter a company name');
+      return;
+    }
+    if (!formData.period) {
+      alert('Please enter the time period');
       return;
     }
 
     if (editingId) {
-      updateSectionItem('experience', editingId, formData);
+      updateSectionItem('experience', formData.id, formData);
       setExperiences(prev => prev.map(e => e.id === editingId ? formData : e));
     } else {
       addItemToSection('experience', formData);
-      setExperiences(prev => [...prev, formData]);
+      setExperiences([...experiences, formData]);
     }
-    
     setFormData({
       id: '',
       title: '',
@@ -84,10 +99,20 @@ export default function ExperienceEditor() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Delete this experience?')) {
+    if (confirm('Are you sure you want to delete this experience?')) {
       deleteSectionItem('experience', id);
       setExperiences(prev => prev.filter(e => e.id !== id));
     }
+  };
+
+  const handleDuplicate = (experience: ExperienceItem) => {
+    const newExperience: ExperienceItem = {
+      ...experience,
+      id: `exp-${Date.now()}`,
+      title: `${experience.title} (Copy)`,
+    };
+    addItemToSection('experience', newExperience);
+    setExperiences([...experiences, newExperience]);
   };
 
   return (
@@ -104,7 +129,7 @@ export default function ExperienceEditor() {
       </div>
 
       {/* Add/Edit Form */}
-      {editingId === null && formData.company === '' ? (
+      {editingId === null && formData.title === '' ? (
         <div className="text-center text-muted-foreground py-4">
           Click "Add Experience" to create a new entry
         </div>
@@ -256,6 +281,14 @@ export default function ExperienceEditor() {
                   )}
 
                   <div className="flex gap-2 justify-end mt-3 pt-2 border-t border-neon-purple/20">
+                    <Button
+                      onClick={() => handleDuplicate(exp)}
+                      variant="outline"
+                      className="text-xs border-neon-cyan/30 hover:bg-neon-cyan/10 gap-1"
+                    >
+                      <Copy className="w-3 h-3" />
+                      Copy
+                    </Button>
                     <Button
                       onClick={() => handleEdit(exp)}
                       variant="outline"

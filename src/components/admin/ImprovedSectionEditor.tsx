@@ -170,7 +170,11 @@ const ImprovedSectionEditor = ({ section, onClose, onSave }: ImprovedSectionEdit
                 <Input value={(project.technologies || []).join(', ')} onChange={(e) => updateArrayItem('projects', idx, 'technologies', e.target.value.split(',').map(t => t.trim()))} placeholder="React, TypeScript, Tailwind" className="text-xs" />
               </FormField>
               <ImageUploadField label="Project Image" value={project.image} onChange={(url) => updateArrayItem('projects', idx, 'image', url)} />
-              <Button onClick={() => removeArrayItem('projects', idx)} className="bg-red-500/20 text-red-400 text-xs h-7 w-full">
+              <Button onClick={() => {
+                if (confirm('Delete this project? This cannot be undone.')) {
+                  removeArrayItem('projects', idx);
+                }
+              }} className="bg-red-500/20 text-red-400 text-xs h-7 w-full">
                 <Trash2 className="w-3 h-3 mr-1" />Delete Project
               </Button>
             </div>
@@ -205,7 +209,11 @@ const ImprovedSectionEditor = ({ section, onClose, onSave }: ImprovedSectionEdit
               <FormField label="Description">
                 <Textarea value={exp.description || ''} onChange={(e) => updateArrayItem('experiences', idx, 'description', e.target.value)} placeholder="What did you do?" rows={2} />
               </FormField>
-              <Button onClick={() => removeArrayItem('experiences', idx)} className="bg-red-500/20 text-red-400 text-xs h-7 w-full">
+              <Button onClick={() => {
+                if (confirm('Delete this experience? This cannot be undone.')) {
+                  removeArrayItem('experiences', idx);
+                }
+              }} className="bg-red-500/20 text-red-400 text-xs h-7 w-full">
                 <Trash2 className="w-3 h-3 mr-1" />Delete Experience
               </Button>
             </div>
@@ -240,9 +248,15 @@ const ImprovedSectionEditor = ({ section, onClose, onSave }: ImprovedSectionEdit
               <FormField label="Company">
                 <Input value={testimonial.company || ''} onChange={(e) => updateArrayItem('testimonials', idx, 'company', e.target.value)} placeholder="Company Name" className="text-xs" />
               </FormField>
-              <Button onClick={() => removeArrayItem('testimonials', idx)} className="bg-red-500/20 text-red-400 text-xs h-7 w-full">
-                <Trash2 className="w-3 h-3 mr-1" />Delete Testimonial
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => {
+                  if (confirm('Delete this testimonial? This cannot be undone.')) {
+                    removeArrayItem('testimonials', idx);
+                  }
+                }} className="flex-1 bg-red-500/20 text-red-400 text-xs h-7">
+                  <Trash2 className="w-3 h-3 mr-1" />Delete
+                </Button>
+              </div>
             </div>
           </CollapsibleItem>
         ))}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, ChevronDown } from 'lucide-react';
+import { Trash2, Plus, ChevronDown, Copy } from 'lucide-react';
 import { useContent } from '@/contexts/ContentContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -52,20 +52,31 @@ export default function ProjectsEditor() {
     setEditingId(item.id);
   };
 
+  const handleFieldChange = (id: string, field: keyof ProjectItem, value: any) => {
+    setProjects(prev =>
+      prev.map(proj =>
+        proj.id === id ? { ...proj, [field]: value } : proj
+      )
+    );
+  };
+
   const handleSave = () => {
-    if (!formData.title || !formData.description) {
-      alert('Please fill in at least title and description');
+    if (!formData.title) {
+      alert('Please enter a project title');
+      return;
+    }
+    if (!formData.shortDesc) {
+      alert('Please enter a short description');
       return;
     }
 
     if (editingId) {
-      updateSectionItem('projects', editingId, formData);
+      updateSectionItem('projects', formData.id, formData);
       setProjects(prev => prev.map(p => p.id === editingId ? formData : p));
     } else {
       addItemToSection('projects', formData);
-      setProjects(prev => [...prev, formData]);
+      setProjects([...projects, formData]);
     }
-    
     setFormData({
       id: '',
       title: '',
@@ -80,10 +91,20 @@ export default function ProjectsEditor() {
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('Delete this project?')) {
+    if (confirm('Are you sure you want to delete this project?')) {
       deleteSectionItem('projects', id);
       setProjects(prev => prev.filter(p => p.id !== id));
     }
+  };
+
+  const handleDuplicate = (project: ProjectItem) => {
+    const newProject: ProjectItem = {
+      ...project,
+      id: `proj-${Date.now()}`,
+      title: `${project.title} (Copy)`,
+    };
+    addItemToSection('projects', newProject);
+    setProjects([...projects, newProject]);
   };
 
   return (
@@ -261,6 +282,14 @@ export default function ProjectsEditor() {
                   )}
 
                   <div className="flex gap-2 justify-end mt-3 pt-2 border-t border-neon-purple/20">
+                    <Button
+                      onClick={() => handleDuplicate(project)}
+                      variant="outline"
+                      className="text-xs border-neon-cyan/30 hover:bg-neon-cyan/10 gap-1"
+                    >
+                      <Copy className="w-3 h-3" />
+                      Copy
+                    </Button>
                     <Button
                       onClick={() => handleEdit(project)}
                       variant="outline"

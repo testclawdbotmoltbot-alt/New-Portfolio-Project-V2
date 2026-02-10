@@ -139,7 +139,7 @@ const AdminDashboard = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-cyber-dark flex relative overflow-hidden">
+     <div className="min-h-screen w-full bg-cyber-dark flex relative overflow-hidden">
       {/* Sci-fi scan line overlay */}
       <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.03] bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,255,255,0.1)_2px,rgba(0,255,255,0.1)_4px)] h-full" />
       {/* Subtle grid */}
@@ -267,37 +267,95 @@ const AdminDashboard = () => {
         <div className="p-6">
           {/* Site & Logo Tab */}
           {activeTab === 'site' && (
-            <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 max-w-2xl">
-              <h2 className="font-orbitron font-bold text-neon-cyan mb-2 flex items-center gap-2">
-                <Globe className="w-5 h-5" />
-                BRANDING_AND_LOGO
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6 font-mono">Site name, tagline, and logo used in header and footer.</p>
-              <SiteEditor site={site} onChange={updateSite} />
+            <div>
+              <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 mb-6">
+                <h2 className="font-orbitron font-bold text-neon-cyan mb-1 flex items-center gap-2">
+                  <Globe className="w-5 h-5" />
+                  BRANDING & LOGO
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4 font-mono">Customize your portfolio branding - site name, tagline, and logo appear in header and footer</p>
+                <div className="space-y-2 text-xs text-muted-foreground mb-6">
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Site Name: Used in header logo and footer</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Tagline: Displayed below site name</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Logo: Upload image (PNG/JPG recommended - 1:1 aspect ratio)</span>
+                  </div>
+                </div>
+              </div>
+              <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 max-w-2xl">
+                <SiteEditor site={site} onChange={updateSite} />
+              </div>
             </div>
           )}
 
           {/* Navigation Tab */}
           {activeTab === 'navigation' && (
-            <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 max-w-3xl">
-              <h2 className="font-orbitron font-bold text-neon-cyan mb-2 flex items-center gap-2">
-                <PanelTop className="w-5 h-5" />
-                NAV_MENU
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6 font-mono">Links, CTA label, and admin button. Add, remove, or hide items.</p>
-              <NavigationEditor config={navigation} onChange={updateNavigation} />
+            <div>
+              <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 mb-6">
+                <h2 className="font-orbitron font-bold text-neon-cyan mb-1 flex items-center gap-2">
+                  <PanelTop className="w-5 h-5" />
+                  NAVIGATION MENU
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4 font-mono">Manage your navigation bar - add links, set CTA button, and customize admin label</p>
+                <div className="space-y-2 text-xs text-muted-foreground">
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Navigation Items: Main menu links (use #section-id for internal links)</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>CTA Label: Button text in header (e.g., "Get Started")</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Toggle visibility: Hide items without deleting them</span>
+                  </div>
+                </div>
+              </div>
+              <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 max-w-3xl">
+                <NavigationEditor config={navigation} onChange={updateNavigation} />
+              </div>
             </div>
           )}
 
           {/* Footer Tab */}
           {activeTab === 'footer' && (
-            <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 max-w-4xl">
-              <h2 className="font-orbitron font-bold text-neon-cyan mb-2 flex items-center gap-2">
-                <PanelBottom className="w-5 h-5" />
-                FOOTER_CONTENT
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6 font-mono">Brand, links, social, status rows, and copyright. Full control.</p>
-              <FooterEditor config={footer} onChange={updateFooter} />
+            <div>
+              <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 mb-6">
+                <h2 className="font-orbitron font-bold text-neon-cyan mb-1 flex items-center gap-2">
+                  <PanelBottom className="w-5 h-5" />
+                  FOOTER CONTENT
+                </h2>
+                <p className="text-sm text-muted-foreground mb-4 font-mono">Configure footer sections - brand info, navigation links, social links, and system status</p>
+                <div className="space-y-2 text-xs text-muted-foreground">
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Brand Section: Company name, tagline, about text</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Navigation Links: Quick links to main sections</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Social Links: GitHub, LinkedIn, Twitter, etc.</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">✓</span>
+                    <span>Status Rows: System status information</span>
+                  </div>
+                </div>
+              </div>
+              <div className="glass-panel rounded-xl border border-neon-cyan/30 p-6 max-w-4xl">
+                <FooterEditor config={footer} onChange={updateFooter} />
+              </div>
             </div>
           )}
 
@@ -310,7 +368,25 @@ const AdminDashboard = () => {
                   <Layers className="w-5 h-5 text-neon-cyan" />
                   PAGE SECTIONS
                 </h2>
-                <p className="text-sm text-muted-foreground">Manage all sections of your portfolio. Drag to reorder, click to edit content. Sections marked as hidden won't appear on your live page.</p>
+                <p className="text-sm text-muted-foreground mb-4">Manage all sections of your portfolio. Customize content, reorder sections, and control visibility.</p>
+                <div className="space-y-2 text-xs text-muted-foreground">
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">⬌</span>
+                    <span>Drag sections to reorder them on your live page</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">⚙</span>
+                    <span>Click Settings to edit section content</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">👁</span>
+                    <span>Toggle eye icon to show/hide sections from your live page</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-neon-cyan">🗑</span>
+                    <span>Delete removes sections permanently</span>
+                  </div>
+                </div>
               </div>
 
               {/* Sections Grid */}

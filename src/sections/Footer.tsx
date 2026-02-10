@@ -36,7 +36,7 @@ const Footer = () => {
     <footer className="relative py-16 lg:py-20 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-t from-cyber-dark via-cyber-dark to-transparent" />
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-neon-cyan/5 rounded-full blur-[150px]" />
+      <div className="absolute bottom-0 left-1/2 pointer-events-none -z-10 -translate-x-1/2 w-[800px] h-96 max-w-[80vw] max-h-[50vh] bg-neon-cyan/5 rounded-full blur-[150px]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">

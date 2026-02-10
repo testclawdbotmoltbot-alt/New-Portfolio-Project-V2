@@ -61,8 +61,8 @@ const Contact = ({ section }: { section: Section }) => {
     <section id="contact" className="relative py-24 lg:py-32 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 cyber-grid opacity-20" />
-      <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-neon-cyan/10 rounded-full blur-[200px]" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-neon-purple/10 rounded-full blur-[200px]" />
+      <div className="absolute top-0 left-0 pointer-events-none -z-10 w-96 h-96 max-w-[50vw] max-h-[50vh] bg-neon-cyan/10 rounded-full blur-[200px]" />
+      <div className="absolute bottom-0 right-0 pointer-events-none -z-10 w-96 h-96 max-w-[50vw] max-h-[50vh] bg-neon-purple/10 rounded-full blur-[200px]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

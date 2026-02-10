@@ -112,8 +112,8 @@ const Skills = ({ section }: { section: Section }) => {
     <section id="skills" className="relative py-24 lg:py-32 overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 cyber-grid opacity-20" />
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-neon-cyan/5 rounded-full blur-[150px]" />
-      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-neon-purple/5 rounded-full blur-[150px]" />
+      <div className="absolute top-0 left-1/4 pointer-events-none -z-10 w-80 h-80 max-w-[50vw] max-h-[50vh] bg-neon-cyan/5 rounded-full blur-[150px]" />
+      <div className="absolute bottom-0 right-1/4 pointer-events-none -z-10 w-80 h-80 max-w-[50vw] max-h-[50vh] bg-neon-purple/5 rounded-full blur-[150px]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

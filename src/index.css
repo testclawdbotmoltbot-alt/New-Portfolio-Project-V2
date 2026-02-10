@@ -43,10 +43,13 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
+  
   
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
   
   body {
@@ -54,8 +57,13 @@
     font-family: 'Rajdhani', system-ui, sans-serif;
     background-color: var(--dark-bg);
     overflow-x: hidden;
+    margin: 0;
+    padding: 0;
   }
   
+  #root {
+    display: contents;
+  }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Orbitron', sans-serif;
   }

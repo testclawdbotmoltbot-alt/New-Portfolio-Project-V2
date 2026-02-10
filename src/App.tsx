@@ -40,9 +40,9 @@ const WebsiteLayout = () => {
     .sort((a, b) => a.order - b.order);
 
   return (
-    <div className="min-h-screen bg-cyber-dark text-white overflow-x-hidden">
+      <div className="min-h-screen w-full bg-cyber-dark text-white overflow-x-hidden">
       <Navigation />
-      <main>
+        <main className="w-full overflow-x-hidden">
         {visibleSections.map((section) => {
           const Component = SECTION_COMPONENTS[section.type];
           if (!Component) return null;

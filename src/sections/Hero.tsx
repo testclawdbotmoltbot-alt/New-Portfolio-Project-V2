@@ -84,10 +84,10 @@ const Hero = ({ section }: { section: Section }) => {
       ))}
 
       {/* Corner HUD Elements */}
-      <div className="absolute top-20 left-4 w-32 h-32 border-l-2 border-t-2 border-neon-cyan/50" />
-      <div className="absolute top-20 right-4 w-32 h-32 border-r-2 border-t-2 border-neon-purple/50" />
-      <div className="absolute bottom-20 left-4 w-32 h-32 border-l-2 border-b-2 border-neon-purple/50" />
-      <div className="absolute bottom-20 right-4 w-32 h-32 border-r-2 border-b-2 border-neon-cyan/50" />
+      <div className="absolute top-20 left-4 w-20 h-20 sm:w-32 sm:h-32 border-l-2 border-t-2 border-neon-cyan/50 pointer-events-none" />
+      <div className="absolute top-20 right-4 w-20 h-20 sm:w-32 sm:h-32 border-r-2 border-t-2 border-neon-purple/50 pointer-events-none" />
+      <div className="absolute bottom-20 left-4 w-20 h-20 sm:w-32 sm:h-32 border-l-2 border-b-2 border-neon-purple/50 pointer-events-none" />
+      <div className="absolute bottom-20 right-4 w-20 h-20 sm:w-32 sm:h-32 border-r-2 border-b-2 border-neon-cyan/50 pointer-events-none" />
 
       {/* Main Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -219,17 +219,17 @@ const Hero = ({ section }: { section: Section }) => {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-              className="absolute w-[400px] h-[400px] rounded-full border-2 border-dashed border-neon-cyan/30"
+              className="absolute pointer-events-none -z-10 w-96 h-96 max-w-[50vw] max-h-[50vh] rounded-full border-2 border-dashed border-neon-cyan/30"
             />
             <motion.div
               animate={{ rotate: -360 }}
               transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-              className="absolute w-[350px] h-[350px] rounded-full border border-neon-purple/30"
+              className="absolute pointer-events-none -z-10 w-80 h-80 max-w-[50vw] max-h-[50vh] rounded-full border border-neon-purple/30"
             />
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-              className="absolute w-[450px] h-[450px] rounded-full border border-dotted border-neon-pink/20"
+              className="absolute pointer-events-none -z-10 w-[450px] h-[450px] max-w-[50vw] max-h-[50vh] rounded-full border border-dotted border-neon-pink/20"
             />
 
             {/* AI Avatar */}

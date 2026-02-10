@@ -91,7 +91,7 @@ const Testimonials = ({ section: _section }: { section: Section }) => {
     <section id="testimonials" className="relative py-24 lg:py-32 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 hex-pattern opacity-30" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-neon-purple/10 rounded-full blur-[200px]" />
+      <div className="absolute top-1/2 left-1/2 pointer-events-none -z-10 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] max-w-[70vw] max-h-[70vh] bg-neon-purple/10 rounded-full blur-[200px]" />
 
       {/* Data Stream Effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

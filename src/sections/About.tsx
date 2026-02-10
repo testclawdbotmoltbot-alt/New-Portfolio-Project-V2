@@ -52,8 +52,8 @@ const About = ({ section }: { section: Section }) => {
     <section id="about" className="relative py-24 lg:py-32 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 hex-pattern opacity-50" />
-      <div className="absolute top-1/4 left-0 w-96 h-96 bg-neon-purple/10 rounded-full blur-[150px]" />
-      <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-neon-cyan/10 rounded-full blur-[150px]" />
+      <div className="absolute top-1/4 left-0 pointer-events-none -z-10 w-96 h-96 max-w-[45vw] max-h-[50vh] bg-neon-purple/10 rounded-full blur-[150px]" />
+      <div className="absolute bottom-1/4 right-0 pointer-events-none -z-10 w-96 h-96 max-w-[45vw] max-h-[50vh] bg-neon-cyan/10 rounded-full blur-[150px]" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}

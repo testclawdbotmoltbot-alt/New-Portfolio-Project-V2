@@ -37,11 +37,11 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cyber-dark flex items-center justify-center relative overflow-hidden">
+     <div className="min-h-screen w-full bg-cyber-dark flex items-center justify-center relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 cyber-grid opacity-20" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/10 rounded-full blur-[150px]" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-purple/10 rounded-full blur-[150px]" />
+      <div className="absolute top-1/4 left-1/4 pointer-events-none -z-10 w-96 h-96 max-w-[40vw] max-h-[50vh] bg-neon-cyan/10 rounded-full blur-[150px]" />
+      <div className="absolute bottom-1/4 right-1/4 pointer-events-none -z-10 w-96 h-96 max-w-[40vw] max-h-[50vh] bg-neon-purple/10 rounded-full blur-[150px]" />
 
       {/* Floating Particles */}
       {[...Array(15)].map((_, i) => (

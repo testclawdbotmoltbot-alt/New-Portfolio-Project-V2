@@ -5,20 +5,35 @@ import { Eye, EyeOff, Lock, Mail, User, Cpu, ArrowRight, AlertCircle, CheckCircl
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { useContent } from '@/contexts/ContentContext';
+import { generateDemoData } from '@/utils/demoData';
 
 const Register = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
+  const { importData } = useContent();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [showDemoOption, setShowDemoOption] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
   });
+
+  const handleLoadDemoData = () => {
+    const demoData = generateDemoData();
+    const success = importData(JSON.stringify(demoData));
+    if (success) {
+      setTimeout(() => navigate('/admin'), 500);
+    } else {
+      setError('Failed to load demo data');
+      setShowDemoOption(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +55,13 @@ const Register = () => {
       const success = await register(formData.name, formData.email, formData.password);
       if (success) {
         setSuccess(true);
-        setTimeout(() => navigate('/admin'), 1500);
+        setShowDemoOption(true);
+        // Auto-redirect if user doesn't choose demo data
+        setTimeout(() => {
+          if (!showDemoOption) {
+            navigate('/admin');
+          }
+        }, 5000);
       } else {
         setError('Email already registered.');
       }
@@ -52,11 +73,11 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cyber-dark flex items-center justify-center relative overflow-hidden">
+     <div className="min-h-screen w-full bg-cyber-dark flex items-center justify-center relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 cyber-grid opacity-20" />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-purple/10 rounded-full blur-[150px]" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-cyan/10 rounded-full blur-[150px]" />
+      <div className="absolute top-1/4 left-1/4 pointer-events-none -z-10 w-96 h-96 max-w-[40vw] max-h-[50vh] bg-neon-purple/10 rounded-full blur-[150px]" />
+      <div className="absolute bottom-1/4 right-1/4 pointer-events-none -z-10 w-96 h-96 max-w-[40vw] max-h-[50vh] bg-neon-cyan/10 rounded-full blur-[150px]" />
 
       {/* Floating Particles */}
       {[...Array(15)].map((_, i) => (
@@ -122,7 +143,7 @@ const Register = () => {
             </motion.div>
           )}
 
-          {success && (
+          {success && !showDemoOption && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -133,7 +154,38 @@ const Register = () => {
             </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          {success && showDemoOption && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-4 rounded-lg bg-neon-cyan/10 border border-neon-cyan/30 mb-6 space-y-4"
+            >
+              <div className="flex items-center gap-2 text-neon-cyan">
+                <CheckCircle className="w-5 h-5" />
+                <p className="font-mono">Account created successfully!</p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Would you like to load demo portfolio data to get started quickly? You can always customize or delete it later.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleLoadDemoData}
+                  className="flex-1 bg-neon-cyan text-cyber-dark font-bold hover:bg-neon-cyan/80"
+                >
+                  Load Demo Data
+                </Button>
+                <Button
+                  onClick={() => navigate('/admin')}
+                  variant="outline"
+                  className="flex-1 border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan/10"
+                >
+                  Start Fresh
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5" style={{ display: success && showDemoOption ? 'none' : 'block' }}>
             {/* Name Field */}
             <div>
               <label className="text-xs font-mono text-neon-purple mb-2 block">

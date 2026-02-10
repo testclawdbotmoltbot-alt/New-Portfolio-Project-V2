@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useContent } from '@/contexts/ContentContext';
 
 interface Message {
   id: string;
@@ -12,6 +14,7 @@ interface Message {
 }
 
 const PuppyChatbot = () => {
+  const { site, sections } = useContent();
   const [isOpen, setIsOpen] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -20,14 +23,7 @@ const PuppyChatbot = () => {
   const [dragBounds, setDragBounds] = useState({ left: 0, right: 300, top: 0, bottom: 300 });
   const [actionTimer, setActionTimer] = useState(0);
   const [actionLabel, setActionLabel] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'bot',
-      text: "Woof! 🐶 I'm Max, your puppy guide! Drag me around or click to chat! I can help you explore Alex's portfolio.",
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [puppyMood, setPuppyMood] = useState<'idle' | 'happy' | 'thinking' | 'barking'>('idle');
@@ -35,6 +31,18 @@ const PuppyChatbot = () => {
   const [puppyActivity, setPuppyActivity] = useState<PuppyActivity>('idle');
   const puppyRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize messages after context is available
+  useEffect(() => {
+    if (site.siteName && messages.length === 0) {
+      setMessages([{
+        id: '1',
+        type: 'bot',
+        text: `Woof! 🐶 I'm Max, your puppy guide! Drag me around or click to chat! I can help you explore ${site.siteName}'s portfolio.`,
+        timestamp: new Date(),
+      }]);
+    }
+  }, [site.siteName]);
 
   useEffect(() => {
     const updatePositionAndBounds = () => {
@@ -57,32 +65,88 @@ const PuppyChatbot = () => {
     return () => clearInterval(interval);
   }, [actionTimer]);
 
-  const botResponses: Record<string, string> = {
-    'hello': "Woof! Hello there! Welcome to Alex's portfolio! 🐕",
-    'hi': "Hi! I'm Max, your puppy assistant. How can I help you today? *wags tail*",
-    'hey': "Hey! Ready to explore some amazing projects?",
-    'skills': "Bark! Alex is a master of: Data Analytics, Cloud Architecture, AI/ML, and Full-Stack Development! Which area interests you?",
-    'projects': "Woof woof! Check out the Projects section! Highlights include: Enterprise Data Platform ($2.4M savings), AI Customer Intelligence (92% accuracy), and Cloud Migration (200+ apps)!",
-    'experience': "Alex has 8+ years of experience across TechVision Solutions, DataDriven Consulting, and more! Currently Senior Digital Technology Analyst. *tail wagging intensifies*",
-    'contact': "You can reach Alex through the contact form or email at alex.morgan@email.com. Want me to take you there? 📧",
-    'about': "Alex Morgan is a Digital Technology Analyst who transforms complex data into actionable insights. 150+ projects, 25M+ data points analyzed! *proud puppy*",
-    'theme': "This portfolio uses a cyberpunk theme with neon colors! You can customize it in the admin panel if you have access. 😉",
-    'admin': "The admin panel allows you to customize sections, change colors, and manage content. Need to log in?",
-    'help': "I can help you navigate to: Home, About, Skills, Projects, Experience, Testimonials, or Contact. Just ask! 🐾",
-    'bye': "Goodbye! Feel free to drag me around if you need help again! 👋",
-    'thank': "You're welcome! I'm here to help anytime! 🐶",
-    'thanks': "You're welcome! Enjoy exploring the portfolio! ✨",
-    'default': "Interesting! I can help you navigate to different sections. Try asking about: Skills, Projects, Experience, or Contact!",
+  // Dynamic response builders
+  const getSkillsSummary = (): string => {
+    const skillsSection = sections.find(s => s.type === 'skills');
+    if (!skillsSection?.content?.skills || skillsSection.content.skills.length === 0) {
+      return `Bark! ${site.siteName} is a master of many technical skills! Which area interests you?`;
+    }
+    const skillsList = skillsSection.content.skills.slice(0, 3).map((s: any) => s.name).join(', ');
+    return `Bark! ${site.siteName} is a master of: ${skillsList}, and more! Which area interests you?`;
+  };
+
+  const getProjectsSummary = (): string => {
+    const projectsSection = sections.find(s => s.type === 'projects');
+    if (!projectsSection?.content?.projects || projectsSection.content.projects.length === 0) {
+      return `Woof woof! Check out the Projects section! ${site.siteName} has delivered amazing projects!`;
+    }
+    const projects = projectsSection.content.projects.slice(0, 2).map((p: any) => p.title).join(', ');
+    return `Woof woof! Check out these projects: ${projects}, and more!`;
+  };
+
+  const getExperienceSummary = (): string => {
+    const expSection = sections.find(s => s.type === 'experience');
+    if (!expSection?.content?.experiences || expSection.content.experiences.length === 0) {
+      return `${site.siteName} has extensive professional experience! *tail wagging intensifies*`;
+    }
+    const firstExp = expSection.content.experiences[0];
+    return `${site.siteName} has been a ${firstExp.title} and more! Currently working in an amazing role! *tail wagging intensifies*`;
+  };
+
+  const getAboutInfo = (): string => {
+    const aboutSection = sections.find(s => s.type === 'about');
+    if (!aboutSection?.content?.intro) {
+      return `${site.siteName} is a talented professional! Want to know more?`;
+    }
+    return aboutSection.content.intro;
+  };
+
+  const getContactInfo = (): string => {
+    const contactSection = sections.find(s => s.type === 'contact');
+    const email = contactSection?.content?.email || 'the contact form';
+    return `You can reach ${site.siteName} through ${email || 'the contact form'}. Want me to take you there? 📧`;
   };
 
   const getBotResponse = (userMessage: string): string => {
     const lowerMessage = userMessage.toLowerCase();
-    for (const [key, response] of Object.entries(botResponses)) {
-      if (lowerMessage.includes(key)) {
-        return response;
-      }
+    
+    if (lowerMessage.includes('hello') || lowerMessage.includes('hi')) {
+      return `Woof! Hello there! Welcome to ${site.siteName}'s portfolio! 🐕`;
     }
-    return botResponses.default;
+    if (lowerMessage.includes('skill')) {
+      return getSkillsSummary();
+    }
+    if (lowerMessage.includes('project')) {
+      return getProjectsSummary();
+    }
+    if (lowerMessage.includes('experience') || lowerMessage.includes('work')) {
+      return getExperienceSummary();
+    }
+    if (lowerMessage.includes('about') || lowerMessage.includes('who')) {
+      return getAboutInfo();
+    }
+    if (lowerMessage.includes('contact') || lowerMessage.includes('email') || lowerMessage.includes('reach')) {
+      return getContactInfo();
+    }
+    if (lowerMessage.includes('hey')) {
+      return "Hey! Ready to explore some amazing projects?";
+    }
+    if (lowerMessage.includes('theme')) {
+      return "This portfolio uses a cyberpunk theme with neon colors! You can customize it in the admin panel if you have access. 😉";
+    }
+    if (lowerMessage.includes('admin')) {
+      return "The admin panel allows you to customize sections, change colors, and manage content. Need to log in?";
+    }
+    if (lowerMessage.includes('help')) {
+      return `I can help you navigate ${site.siteName}'s portfolio sections. Try asking about: Skills, Projects, Experience, or Contact! 🐾`;
+    }
+    if (lowerMessage.includes('bye')) {
+      return "Goodbye! Feel free to drag me around if you need help again! 👋";
+    }
+    if (lowerMessage.includes('thank')) {
+      return "You're welcome! I'm here to help anytime! 🐶";
+    }
+    return "Interesting! I can help you navigate to different sections. Try asking about: Skills, Projects, Experience, or Contact!";
   };
 
   const handleSend = () => {
@@ -249,7 +313,7 @@ const PuppyChatbot = () => {
     }
   };
 
-  return (
+  return createPortal(
     <>
       {/* Action Buttons around Puppy */}
       {showActions && puppyActions.map((action, index) => {
@@ -496,7 +560,7 @@ const PuppyChatbot = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             transition={{ duration: 0.3 }}
-            className="fixed bottom-28 right-6 z-[9999] w-[380px] max-w-[calc(100vw-48px)]"
+            className="fixed bottom-28 right-6 z-[9999] w-[360px] sm:w-[380px] max-w-[calc(100vw-48px)] ml-4 mr-4 sm:mr-0"
           >
             <div className="glass-panel rounded-2xl overflow-hidden border border-yellow-400/50 shadow-lg"
               style={{ boxShadow: '0 0 30px rgba(255, 200, 100, 0.3)' }}>
@@ -625,7 +689,8 @@ const PuppyChatbot = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </>,
+    document.body
   );
 };
 
